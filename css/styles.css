@@ -274,7 +274,7 @@ html.js .hero__fig img{ clip-path:inset(0 0 100% 0); }
 
 /* ---------- cinematic band ---------- */
 .band{ overflow:hidden; border-top:1px solid var(--line); }
-.band__fig{ position:relative; margin:0; height:clamp(320px,64vh,640px); overflow:hidden; filter:grayscale(1) contrast(1.04); }
+.band__fig{ position:relative; margin:0; height:clamp(320px,64vh,640px); overflow:hidden; filter:contrast(1.03); }
 .band__fig img{ width:100%; height:120%; object-fit:cover; object-position:50% 28%; }
 .band__fig figcaption{ position:absolute; left:max(22px,env(safe-area-inset-left,0px)); bottom:22px; font-family:var(--mono); font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--fg); mix-blend-mode:difference; }
 
