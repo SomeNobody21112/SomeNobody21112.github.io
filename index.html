@@ -140,7 +140,7 @@
       </header>
       <div class="cli" id="cli" data-reveal>
         <div class="cli__bar"><i></i><i></i><i></i><em>visitor@srd — zsh</em></div>
-        <div class="cli__screen" id="cliScreen" role="log" aria-live="polite" aria-label="Terminal output"></div>
+        <div class="cli__screen" id="cliScreen" role="log" aria-live="polite" aria-label="Terminal output" tabindex="0" data-lenis-prevent></div>
         <form class="cli__form" id="cliForm" autocomplete="off">
           <label class="cli__prompt" for="cliInput">visitor@srd<b>:</b>~<b>$</b></label>
           <input class="cli__input" id="cliInput" type="text" spellcheck="false" autocapitalize="off" aria-label="Type a command" />
@@ -180,24 +180,28 @@
       </header>
       <div class="caps__grid">
         <article class="cap" data-reveal>
-          <span class="cap__k">01</span>
+          <span class="cap__sig"><b>def</b> apply_ml<span class="cap__par">()</span><span class="cap__k">01</span></span>
           <h3 class="cap__h">Applied ML &amp; LLMs</h3>
-          <p class="cap__p">Vision-language pipelines, sentence embeddings, anomaly detection and survival models — shipped against benchmarks and held-out sets, never vibes.</p>
+          <p class="cap__p">Vision-language pipelines, sentence embeddings, anomaly detection and survival models — measured against benchmarks and held-out sets, never vibes.</p>
+          <span class="cap__proof"><i>return</i> RAWRS — shipped to WinVinaya, daily</span>
         </article>
         <article class="cap" data-reveal>
-          <span class="cap__k">02</span>
+          <span class="cap__sig"><b>def</b> ship_end_to_end<span class="cap__par">()</span><span class="cap__k">02</span></span>
           <h3 class="cap__h">End-to-end delivery</h3>
-          <p class="cap__p">From data pipeline to API to UI: FastAPI + Pydantic on the back, React + TypeScript on the front, Docker and CI around it.</p>
+          <p class="cap__p">Data pipeline → API → UI, by one person: FastAPI + Pydantic on the back, React + TypeScript on the front, Docker and CI around it.</p>
+          <span class="cap__proof"><i>return</i> idea &rarr; production, one hand on it</span>
         </article>
         <article class="cap" data-reveal>
-          <span class="cap__k">03</span>
+          <span class="cap__sig"><b>def</b> build_from_scratch<span class="cap__par">()</span><span class="cap__k">03</span></span>
           <h3 class="cap__h">First-principles systems</h3>
           <p class="cap__p">When there's no library for it, I build the hard part myself — Viterbi decoders, bit-exact quantization, statistical significance tests.</p>
+          <span class="cap__proof"><i>return</i> ICHNOVA — 30/30, 0 false accepts</span>
         </article>
         <article class="cap" data-reveal>
-          <span class="cap__k">04</span>
+          <span class="cap__sig"><b>def</b> contribute<span class="cap__par">()</span><span class="cap__k">04</span></span>
           <h3 class="cap__h">Open-source infra</h3>
-          <p class="cap__p">I contribute to the tools I use. A quantization port is merged into llama.cpp; I read code I didn't write and leave it better.</p>
+          <p class="cap__p">I contribute to the tools I use. I read code I didn't write and leave it better than I found it.</p>
+          <span class="cap__proof"><i>return</i> llama.cpp #30630 — merged</span>
         </article>
       </div>
     </div>
@@ -237,6 +241,16 @@
       <div class="stat" data-reveal><span class="stat__num" data-count="1296" data-suffix="">0</span><span class="stat__label">Tests gating every RAWRS change</span></div>
       <div class="stat" data-reveal><span class="stat__num" data-count="476781" data-suffix="">0</span><span class="stat__label">Lifecycle events analysed in Thadam</span></div>
       <div class="stat" data-reveal><span class="stat__num" data-count="30" data-suffix="/30">0</span><span class="stat__label">Signals decoded, 0 false accepts</span></div>
+    </div>
+  </section>
+
+  <!-- ░░ AMBIENT FIELD (interactive) ░░ -->
+  <section class="field" id="field" aria-label="Interactive particle field">
+    <canvas class="field__canvas" id="fieldCanvas"></canvas>
+    <div class="field__overlay">
+      <p class="field__eyebrow">— a quiet system, always running</p>
+      <h2 class="field__title">Ten&nbsp;thousand little<br>decisions, in <em>motion.</em></h2>
+      <p class="field__hint">move your cursor through it</p>
     </div>
   </section>
 
