@@ -94,43 +94,45 @@
     </div>
   </div>
 
-  <!-- ░░ WORK ░░ -->
+  <!-- ░░ WORK (horizontal gallery) ░░ -->
   <section class="work" id="work">
-    <div class="wrap">
-      <header class="sec-head">
+    <div class="work__pin">
+      <div class="wrap work__head">
         <p class="sec-head__idx">02 — Selected Work</p>
         <h2 class="sec-head__title">Things I built<br>and <em>shipped.</em></h2>
-      </header>
-
-      <ul class="worklist">
-        <li class="work-row" data-reveal>
-          <a href="https://github.com/winvinayainfosystemsindia/RAWRS---V1" target="_blank" rel="noopener" data-cursor="view">
-            <span class="work-row__no">01</span>
-            <span class="work-row__name">RAWRS</span>
-            <span class="work-row__desc">Vision-language document accessibility — used daily at WinVinaya. PDFs → accessible DOCX, ~3h to 10–20 min.</span>
-            <span class="work-row__stack">Qwen2.5-VL · FastAPI · React</span>
-            <span class="work-row__arrow">↗</span>
-          </a>
-        </li>
-        <li class="work-row" data-reveal>
-          <a href="https://github.com/SomeNobody21112/Thadam" target="_blank" rel="noopener" data-cursor="view">
-            <span class="work-row__no">02</span>
-            <span class="work-row__name">Thadam</span>
-            <span class="work-row__desc">Audit intelligence over 476,781 lifecycle events. Led a team of 6. Risk scores for inspectors, never verdicts.</span>
-            <span class="work-row__stack">Sentence Transformers · lifelines</span>
-            <span class="work-row__arrow">↗</span>
-          </a>
-        </li>
-        <li class="work-row" data-reveal>
-          <a href="https://github.com/SomeNobody21112/ICHNOVA" target="_blank" rel="noopener" data-cursor="view">
-            <span class="work-row__no">03</span>
-            <span class="work-row__name">ICHNOVA</span>
-            <span class="work-row__desc">Blind radio-signal decoder, built from first principles. 30/30 held-out, zero false accepts. Verified on real time signals.</span>
-            <span class="work-row__stack">NumPy · SciPy · Viterbi</span>
-            <span class="work-row__arrow">↗</span>
-          </a>
-        </li>
-      </ul>
+        <p class="work__nav" aria-hidden="true">drag / scroll <i>→</i></p>
+      </div>
+      <div class="work__viewport" id="workViewport">
+        <ul class="work__track" id="workTrack">
+          <li class="work-card">
+            <a href="https://github.com/winvinayainfosystemsindia/RAWRS---V1" target="_blank" rel="noopener" data-cursor="view">
+              <span class="work-card__media"><img src="assets/work-rawrs.jpg" alt="RAWRS validation workstation" loading="lazy" /></span>
+              <span class="work-card__row"><span class="work-card__no">01</span><span class="work-card__stack">Qwen2.5-VL · FastAPI · React</span></span>
+              <span class="work-card__name">RAWRS</span>
+              <span class="work-card__desc">Vision-language document accessibility — used daily at WinVinaya. PDFs → accessible DOCX, ~3h to 10–20 min.</span>
+              <span class="work-card__view">View repo <i>↗</i></span>
+            </a>
+          </li>
+          <li class="work-card">
+            <a href="https://github.com/SomeNobody21112/Thadam" target="_blank" rel="noopener" data-cursor="view">
+              <span class="work-card__media"><img src="assets/work-thadam.jpg" alt="Thadam technical approach diagram" loading="lazy" /></span>
+              <span class="work-card__row"><span class="work-card__no">02</span><span class="work-card__stack">Sentence Transformers · lifelines</span></span>
+              <span class="work-card__name">Thadam</span>
+              <span class="work-card__desc">Audit intelligence over 476,781 lifecycle events. Led a team of 6. Risk scores for inspectors, never verdicts.</span>
+              <span class="work-card__view">View repo <i>↗</i></span>
+            </a>
+          </li>
+          <li class="work-card">
+            <a href="https://github.com/SomeNobody21112/ICHNOVA" target="_blank" rel="noopener" data-cursor="view">
+              <span class="work-card__media work-card__media--mark"><img src="assets/work-ichnova.jpg" alt="ICHNOVA emblem" loading="lazy" /></span>
+              <span class="work-card__row"><span class="work-card__no">03</span><span class="work-card__stack">NumPy · SciPy · Viterbi</span></span>
+              <span class="work-card__name">ICHNOVA</span>
+              <span class="work-card__desc">Blind radio-signal decoder, built from first principles. 30/30 held-out, zero false accepts. Verified on real signals.</span>
+              <span class="work-card__view">View repo <i>↗</i></span>
+            </a>
+          </li>
+        </ul>
+      </div>
     </div>
   </section>
 
@@ -211,6 +213,22 @@
   </section>
 
 
+  <!-- ░░ ASCII PORTRAIT (interactive) ░░ -->
+  <section class="ascii" id="ascii" aria-label="Interactive ASCII portrait">
+    <div class="wrap ascii__wrap">
+      <div class="ascii__copy" data-reveal>
+        <p class="sec-head__idx">— the engineer, rendered</p>
+        <h2 class="sec-head__title">Me, as <em>characters.</em></h2>
+        <p class="ascii__p">The same frame from up top, resampled live into glyphs. Move across it — the detail sharpens where you point, and drifts when you leave.</p>
+        <p class="ascii__legend" aria-hidden="true"><span> .:-=+*</span>#%@&nbsp;→&nbsp;luminance</p>
+      </div>
+      <div class="ascii__stage" id="asciiStage">
+        <canvas class="ascii__canvas" id="asciiCanvas" role="img" aria-label="ASCII rendering of Sri Ramaanuja Dasan"></canvas>
+      </div>
+    </div>
+    <img id="asciiSrc" src="assets/face.jpg" alt="" aria-hidden="true" hidden />
+  </section>
+
   <!-- ░░ OPEN SOURCE ░░ -->
   <section class="os" id="opensource">
     <div class="wrap">
@@ -227,6 +245,26 @@
         <p class="os-card__body">Added 1-bit and 2-bit GGUF de/quantization to the Python library so tools can load models (e.g. Bonsai) that previously failed with <code>NotImplementedError</code>. Matched the C reference bit for bit — 66/66 checks across 27 quant types.</p>
         <span class="os-card__cta">Read the PR ↗</span>
       </a>
+    </div>
+  </section>
+
+  <!-- ░░ DUAL ALGORITHM (drag to compare) ░░ -->
+  <section class="algo" id="algo" aria-label="Two systems, drag to compare">
+    <div class="wrap">
+      <header class="sec-head">
+        <p class="sec-head__idx">— watch them run</p>
+        <h2 class="sec-head__title">Two systems,<br>one <em>drag.</em></h2>
+      </header>
+      <div class="algo__stage" id="algoStage" data-reveal>
+        <canvas class="algo__cv" id="algoA"></canvas>
+        <div class="algo__reveal" id="algoReveal">
+          <canvas class="algo__cv" id="algoB"></canvas>
+        </div>
+        <div class="algo__divider" id="algoDivider" role="slider" aria-label="Reveal split between the two visualisations" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50" tabindex="0"><span class="algo__knob" aria-hidden="true">⇆</span></div>
+        <span class="algo__label algo__label--l">llama.cpp — Q2_0 quantize</span>
+        <span class="algo__label algo__label--r">ICHNOVA — blind signal decode</span>
+      </div>
+      <p class="algo__hint" aria-hidden="true">drag the handle ←→ · left: weights snapping to 2-bit · right: a signal decoding itself</p>
     </div>
   </section>
 
