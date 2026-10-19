@@ -14,7 +14,7 @@ const ok = (c, m) => { console.log((c ? "  ok  " : " FAIL ") + m); if (!c) fail+
 // 1) local references resolve
 const refs = [...html.matchAll(/(?:href|src)="([^"]+)"/g)]
   .map(m => m[1])
-  .filter(u => !/^https?:|^#|^mailto:/.test(u));
+  .filter(u => !/^https?:|^#|^mailto:|^tel:/.test(u));
 for (const r of refs) ok(existsSync(resolve(root, r)), `asset exists: ${r}`);
 
 // 2) required assets

@@ -235,10 +235,14 @@
           '<span class="mut">ops  </span> Docker · CI · pytest · git'].join("\n");
       },
       contact: function () {
-        return ['github   <a href="https://github.com/SomeNobody21112" target="_blank" rel="noopener">@SomeNobody21112</a>',
+        return ['email    <a href="mailto:sriramaanujadasan2007@gmail.com">sriramaanujadasan2007@gmail.com</a>',
+          'phone    <a href="tel:+917305289070">+91 73052 89070</a>',
+          'github   <a href="https://github.com/SomeNobody21112" target="_blank" rel="noopener">@SomeNobody21112</a>',
           'linkedin <a href="https://linkedin.com/in/sri-ramaanuja-dasan" target="_blank" rel="noopener">in/sri-ramaanuja-dasan</a>',
           'site     <a href="https://somenobody21112.github.io" target="_blank" rel="noopener">somenobody21112.github.io</a>'].join("\n");
       },
+      email: function () { go("mailto:sriramaanujadasan2007@gmail.com"); return 'opening mail to <a href="mailto:sriramaanujadasan2007@gmail.com">sriramaanujadasan2007@gmail.com</a> …'; },
+      call: function () { return 'phone <a href="tel:+917305289070">+91 73052 89070</a>'; },
       github: function () { go("https://github.com/SomeNobody21112"); return "opening GitHub …"; },
       linkedin: function () { go("https://linkedin.com/in/sri-ramaanuja-dasan"); return "opening LinkedIn …"; },
       neofetch: function () { return neofetch(); },

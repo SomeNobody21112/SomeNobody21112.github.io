@@ -293,6 +293,12 @@ html.js .hero__fig img{ clip-path:inset(0 0 100% 0); }
 .cap:hover .cap__proof{ max-height:40px; opacity:1; transform:none; }
 .cap:hover::after{ width:40%; }
 
+/* ---------- contact direct line ---------- */
+.contact__direct{ margin-top:22px; font-family:var(--mono); font-size:13px; letter-spacing:.01em; color:var(--muted); display:flex; flex-wrap:wrap; gap:10px; align-items:baseline; }
+.contact__direct a{ color:var(--dim); text-decoration:none; border-bottom:1px solid var(--line); padding-bottom:1px; transition:color .25s, border-color .25s; }
+.contact__direct a:hover{ color:var(--fg); border-color:var(--red); }
+.contact__sep{ color:var(--faint); }
+
 /* ---------- ambient field ---------- */
 .field{ position:relative; height:clamp(420px,82vh,760px); border-top:1px solid var(--line); overflow:hidden; background:var(--bg-deep); }
 .field__canvas{ position:absolute; inset:0; width:100%; height:100%; display:block; }
