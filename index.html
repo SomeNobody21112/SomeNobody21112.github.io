@@ -134,9 +134,10 @@
   <!-- ░░ ABOUT ░░ -->
   <section class="about" id="about">
     <div class="wrap about__grid">
-      <figure class="about__fig" data-reveal>
-        <img src="assets/portrait.jpg" alt="Portrait of Sri Ramaanuja Dasan" />
-      </figure>
+      <div class="term" data-reveal>
+        <div class="term__bar"><i></i><i></i><i></i><em>how_i_work.py</em></div>
+        <pre class="term__body"><code id="termCode" aria-label="A Python snippet describing how I work"></code><span class="term__cur" id="termCur">▋</span></pre>
+      </div>
       <div class="about__body" data-reveal>
         <p class="sec-head__idx">03 — About</p>
         <h2 class="about__h">A second-year CSE student who ships like it's the job.</h2>
@@ -147,6 +148,38 @@
           <div><b>3rd · Cyberfest '26</b><span>KCG College of Technology</span></div>
           <div><b>Special Mention</b><span>V-VORTEX, VIT Chennai · AgriSense at E-Summit, IIT Madras</span></div>
         </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ░░ CAPABILITIES ░░ -->
+  <section class="caps" id="caps">
+    <div class="wrap">
+      <header class="sec-head">
+        <p class="sec-head__idx">— What I do</p>
+        <h2 class="sec-head__title">How I'm <em>useful.</em></h2>
+      </header>
+      <div class="caps__grid">
+        <article class="cap" data-reveal>
+          <span class="cap__k">01</span>
+          <h3 class="cap__h">Applied ML &amp; LLMs</h3>
+          <p class="cap__p">Vision-language pipelines, sentence embeddings, anomaly detection and survival models — shipped against benchmarks and held-out sets, never vibes.</p>
+        </article>
+        <article class="cap" data-reveal>
+          <span class="cap__k">02</span>
+          <h3 class="cap__h">End-to-end delivery</h3>
+          <p class="cap__p">From data pipeline to API to UI: FastAPI + Pydantic on the back, React + TypeScript on the front, Docker and CI around it.</p>
+        </article>
+        <article class="cap" data-reveal>
+          <span class="cap__k">03</span>
+          <h3 class="cap__h">First-principles systems</h3>
+          <p class="cap__p">When there's no library for it, I build the hard part myself — Viterbi decoders, bit-exact quantization, statistical significance tests.</p>
+        </article>
+        <article class="cap" data-reveal>
+          <span class="cap__k">04</span>
+          <h3 class="cap__h">Open-source infra</h3>
+          <p class="cap__p">I contribute to the tools I use. A quantization port is merged into llama.cpp; I read code I didn't write and leave it better.</p>
+        </article>
       </div>
     </div>
   </section>

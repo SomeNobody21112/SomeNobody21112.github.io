@@ -126,5 +126,45 @@
   }
   initCursor();
 
+  /* ================= code terminal typewriter ================= */
+  (function typeTerminal() {
+    var code = document.getElementById("termCode");
+    if (!code) return;
+    // tokens: [text, class] — class c=comment, k=keyword, s=string, ""=plain
+    var toks = [
+      ["$ cat how_i_work.py\n", "c"],
+      ["def ", "k"], ["ship", ""], ["(idea):\n    ", ""],
+      ["spec = ", ""], ["benchmark", ""], ["(idea)      ", ""], ["# measure, don't guess\n    ", "c"],
+      ["while not ", "k"], ["spec.passes():\n        ", ""],
+      ["build(); test(); review()\n    ", ""],
+      ["return ", "k"], ["reversible", ""], ["(spec)     ", ""], ["# keep it undoable\n", "c"],
+      ["\n# → ", "c"], ["RAWRS · Thadam · ICHNOVA · llama.cpp#30630", "s"]
+    ];
+    if (reduce) {
+      toks.forEach(function (t) {
+        var s = document.createElement("span"); if (t[1]) s.className = t[1];
+        s.textContent = t[0]; code.appendChild(s);
+      });
+      return;
+    }
+    var ti = 0, ci = 0, span = null;
+    var run = { started: false };
+    function step() {
+      if (ti >= toks.length) return;
+      var t = toks[ti];
+      if (ci === 0) { span = document.createElement("span"); if (t[1]) span.className = t[1]; code.appendChild(span); }
+      span.textContent += t[0][ci];
+      ci++;
+      if (ci >= t[0].length) { ti++; ci = 0; }
+      var ch = t[0][ci - 1];
+      setTimeout(step, ch === "\n" ? 180 : 15 + Math.random() * 25);
+    }
+    // start when scrolled into view
+    if (ST) {
+      ST.create({ trigger: ".term", start: "top 80%", once: true,
+        onEnter: function () { if (!run.started) { run.started = true; step(); } } });
+    } else { step(); }
+  })();
+
   addEventListener("load", function () { if (ST) ST.refresh(); });
 })();
