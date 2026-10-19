@@ -308,7 +308,7 @@
     function colors() {
       var lt = document.documentElement.getAttribute("data-theme") === "light";
       return lt
-        ? { base: "#e7e4db", fade: "rgba(231,228,219,.11)", dot: "rgba(22,19,15,.17)", stat: "rgba(22,19,15,.12)" }
+        ? { base: "#e7e4db", fade: "rgba(231,228,219,.085)", dot: "rgba(14,12,9,.4)", stat: "rgba(14,12,9,.32)" }
         : { base: "#060606", fade: "rgba(6,6,6,.072)",       dot: "rgba(236,233,227,.16)", stat: "rgba(236,233,227,.14)" };
     }
     var col = colors();
