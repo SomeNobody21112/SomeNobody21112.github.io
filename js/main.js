@@ -2,6 +2,20 @@
    Progressive enhancement. Nothing stays hidden without JS:
    the loader and image clips are gated behind html.js, and this
    script always ends with everything visible. */
+/* theme toggle — dark (default) <-> light, persisted; pre-set in <head> to avoid flash */
+(function () {
+  var root = document.documentElement, btn = document.getElementById("themeBtn");
+  function light() { return root.getAttribute("data-theme") === "light"; }
+  function sync() { if (btn) { btn.setAttribute("aria-pressed", light() ? "true" : "false"); btn.setAttribute("aria-label", light() ? "Switch to dark theme" : "Switch to light theme"); } }
+  sync();
+  if (btn) btn.addEventListener("click", function () {
+    if (light()) root.removeAttribute("data-theme"); else root.setAttribute("data-theme", "light");
+    try { localStorage.setItem("theme", light() ? "light" : "dark"); } catch (e) {}
+    sync();
+    window.dispatchEvent(new Event("themechange"));
+  });
+})();
+
 (function () {
   "use strict";
 
@@ -290,18 +304,27 @@
     var dpr = Math.min(1.6, window.devicePixelRatio || 1);
     var sec = document.getElementById("field");
     var W = 0, H = 0;
+    // colors follow the theme: dark backdrop + light particles, or light backdrop + dark particles
+    function colors() {
+      var lt = document.documentElement.getAttribute("data-theme") === "light";
+      return lt
+        ? { base: "#e7e4db", fade: "rgba(231,228,219,.11)", dot: "rgba(22,19,15,.17)", stat: "rgba(22,19,15,.12)" }
+        : { base: "#060606", fade: "rgba(6,6,6,.072)",       dot: "rgba(236,233,227,.16)", stat: "rgba(236,233,227,.14)" };
+    }
+    var col = colors();
     function size() {
       var r = cv.getBoundingClientRect(); W = r.width; H = r.height;
       cv.width = Math.max(1, Math.floor(W * dpr)); cv.height = Math.max(1, Math.floor(H * dpr));
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      ctx.fillStyle = "#060606"; ctx.fillRect(0, 0, W, H);
+      ctx.fillStyle = col.base; ctx.fillRect(0, 0, W, H);
     }
     size();
+    window.addEventListener("themechange", function () { col = colors(); size(); });
     // layered-sine pseudo-noise field (cheap, no library)
     function ang(x, y, t) { return (Math.sin(x * 0.0016 + t * 0.0003) + Math.cos(y * 0.0015 - t * 0.00024) + Math.sin((x + y) * 0.0009 + t * 0.0004)) * 1.7; }
 
     if (reduce) { // static etched field, no animation
-      ctx.strokeStyle = "rgba(236,233,227,.14)"; ctx.lineWidth = 1;
+      ctx.strokeStyle = col.stat; ctx.lineWidth = 1;
       for (var i = 0; i < 2200; i++) { var x = Math.random() * W, y = Math.random() * H, a = ang(x, y, 0); ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + Math.cos(a) * 7, y + Math.sin(a) * 7); ctx.stroke(); }
       return;
     }
@@ -317,7 +340,7 @@
     function frame() {
       if (!running) return;
       t++;
-      ctx.fillStyle = "rgba(6,6,6,.072)"; ctx.fillRect(0, 0, W, H);
+      ctx.fillStyle = col.fade; ctx.fillRect(0, 0, W, H);
       for (var i = 0; i < ps.length; i++) {
         var p = ps[i], px = p.x, py = p.y, a = ang(p.x, p.y, t);
         var vx = Math.cos(a) * 1.1, vy = Math.sin(a) * 1.1;
@@ -325,7 +348,7 @@
         if (near) { var d = Math.sqrt(d2) || 1, f = (1 - d / 126) * 2.6; vx += dx / d * f; vy += dy / d * f; }
         p.x += vx; p.y += vy; p.life--;
         if (p.life < 0 || p.x < 0 || p.x > W || p.y < 0 || p.y > H) { p.x = Math.random() * W; p.y = Math.random() * H; p.life = 60 + (Math.random() * 160 | 0); continue; }
-        ctx.strokeStyle = near ? "rgba(229,36,58,.55)" : "rgba(236,233,227,.16)";
+        ctx.strokeStyle = near ? "rgba(229,36,58,.55)" : col.dot;
         ctx.lineWidth = near ? 1.3 : 0.8;
         ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(p.x, p.y); ctx.stroke();
       }
