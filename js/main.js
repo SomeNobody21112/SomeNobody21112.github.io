@@ -186,10 +186,6 @@
     } else { step(); }
   }
 
-  /* band parallax */
-  G.to(".band__fig img", { yPercent: -12, ease: "none",
-    scrollTrigger: { trigger: ".band", start: "top bottom", end: "bottom top", scrub: true } });
-
   addEventListener("load", function () { if (ST) ST.refresh(); });
 
   /* ================= interactive shell ================= */
