@@ -188,7 +188,7 @@ html.js .hero__fig img{ clip-path:inset(0 0 100% 0); }
 .work__track{ display:flex; gap:clamp(22px,2.6vw,42px); width:max-content; padding-inline:var(--edge) 32vw; list-style:none; margin:0; }
 .work-card{ flex:0 0 auto; width:min(84vw,500px); will-change:transform; }
 .work__head .sec-head__title{ font-size:clamp(30px,4.4vw,58px); }
-.work-card a{ display:flex; flex-direction:column; height:min(60vh,520px); position:relative;
+.work-card a{ display:flex; flex-direction:column; height:min(520px, calc(100vh - 220px)); position:relative;
   border:1px solid var(--line); background:var(--bg); overflow:hidden;
   transition:border-color .4s, transform .5s cubic-bezier(.2,.8,.2,1); }
 .work-card a:hover{ border-color:var(--fg); transform:translateY(-6px); }
