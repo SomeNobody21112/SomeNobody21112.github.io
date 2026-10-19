@@ -340,12 +340,12 @@
       for (var i = 0; i < ps.length; i++) {
         var p = ps[i], px = p.x, py = p.y, a = ang(p.x, p.y, t);
         var vx = Math.cos(a) * 1.1, vy = Math.sin(a) * 1.1;
-        var dx = p.x - mouse.x, dy = p.y - mouse.y, d2 = dx * dx + dy * dy, near = d2 < 16000;
-        if (near) { var d = Math.sqrt(d2) || 1, f = (1 - d / 126) * 2.6; vx += dx / d * f; vy += dy / d * f; }
+        var dx = p.x - mouse.x, dy = p.y - mouse.y, d2 = dx * dx + dy * dy, near = d2 < 22000;
+        if (near) { var d = Math.sqrt(d2) || 1, f = (1 - d / 148) * 2.6; vx += dx / d * f; vy += dy / d * f; }
         p.x += vx; p.y += vy; p.life--;
         if (p.life < 0 || p.x < 0 || p.x > W || p.y < 0 || p.y > H) { p.x = Math.random() * W; p.y = Math.random() * H; p.life = 60 + (Math.random() * 160 | 0); continue; }
-        ctx.strokeStyle = near ? "rgba(229,36,58,.55)" : col.dot;
-        ctx.lineWidth = near ? 1.3 : 0.8;
+        ctx.strokeStyle = near ? "rgba(255,38,52,.95)" : col.dot;
+        ctx.lineWidth = near ? 1.8 : 0.8;
         ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(p.x, p.y); ctx.stroke();
       }
       raf = requestAnimationFrame(frame);
