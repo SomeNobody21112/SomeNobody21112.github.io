@@ -6,144 +6,147 @@
 <title>Sri Ramaanuja Dasan — AI/ML Engineer</title>
 <meta name="description" content="Sri Ramaanuja Dasan — AI/ML engineer who builds and ships systems end to end. RAWRS, Thadam, ICHNOVA, and a merged llama.cpp contribution." />
 
-<!-- Open Graph / social -->
 <meta property="og:title" content="Sri Ramaanuja Dasan — AI/ML Engineer" />
-<meta property="og:description" content="I build and ship AI systems end to end. Vision-language document accessibility, blind signal decoding, model quantization." />
+<meta property="og:description" content="I build and ship AI systems end to end — document accessibility, blind signal decoding, model quantization." />
 <meta property="og:type" content="website" />
 <meta property="og:url" content="https://SomeNobody21112.github.io" />
+<meta property="og:image" content="https://SomeNobody21112.github.io/assets/hero.jpg" />
 
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Instrument+Sans:ital,wght@0,400..700;1,400..600&family=JetBrains+Mono:wght@400;500;700&display=swap" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,300..500&family=Inter+Tight:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" />
 <link rel="stylesheet" href="css/styles.css" />
+<script>document.documentElement.classList.add('js');</script>
 </head>
 <body>
 
-<!-- grain + aurora atmosphere -->
-<div class="atmosphere" aria-hidden="true">
-  <div class="blob blob--1"></div>
-  <div class="blob blob--2"></div>
-  <div class="blob blob--3"></div>
-  <div class="grain"></div>
-  <div class="scanline"></div>
+<!-- film grain + vignette -->
+<div class="grain" aria-hidden="true"></div>
+<div class="vignette" aria-hidden="true"></div>
+
+<!-- custom cursor -->
+<div class="cursor" aria-hidden="true"><span class="cursor__ring"></span></div>
+
+<!-- ░░ LOADER ░░ -->
+<div class="loader" id="loader" aria-hidden="true">
+  <div class="loader__frame">
+    <img class="loader__img" src="assets/portrait.jpg" alt="" />
+    <span class="loader__scrim"></span>
+  </div>
+  <div class="loader__meta">
+    <span class="loader__name">Sri Ramaanuja Dasan</span>
+    <span class="loader__role">AI / ML Engineer — Chennai</span>
+  </div>
+  <div class="loader__bar"><span class="loader__fill" id="loaderFill"></span></div>
+  <div class="loader__count"><span id="loaderNum">0</span><i>/100</i></div>
 </div>
 
-<!-- custom cursor (desktop, fine-pointer only) -->
-<div class="cursor" aria-hidden="true"><span class="cursor__dot"></span><span class="cursor__ring"></span></div>
-
-<!-- intro counter -->
-<div class="intro" id="intro" aria-hidden="true">
-  <div class="intro__num"><span id="introNum">0</span><i>%</i></div>
-  <div class="intro__word">LOADING</div>
-</div>
-
-<!-- top bar -->
-<header class="nav">
-  <a class="nav__mark" href="#top" data-magnetic>SRD<span>/</span></a>
+<!-- ░░ NAV ░░ -->
+<header class="nav" id="nav">
+  <a class="nav__mark" href="#top" data-cursor>SRD<span>®</span></a>
   <nav class="nav__links">
-    <a href="#work" data-link>Work</a>
-    <a href="#opensource" data-link>Open Source</a>
-    <a href="#about" data-link>About</a>
-    <a href="#contact" data-link>Contact</a>
+    <a href="#work" data-cursor>Work</a>
+    <a href="#about" data-cursor>About</a>
+    <a href="#opensource" data-cursor>Open Source</a>
+    <a href="#contact" data-cursor>Contact</a>
   </nav>
-  <span class="nav__status"><i></i> Open to internships · Nov 2026</span>
+  <span class="nav__status"><i></i>Available — Nov 2026</span>
 </header>
 
-<main id="top">
+<main id="top" class="reveal-root">
 
   <!-- ░░ HERO ░░ -->
   <section class="hero" id="hero">
     <div class="wrap">
-      <p class="hero__eyebrow"><span>B.E. CSE · Chennai</span><span>CGPA 8.03</span><span>est. 2029</span></p>
-      <h1 class="hero__title">
-        <span class="line"><span class="word">SRI</span></span>
-        <span class="line"><span class="word">RAMAANUJA</span></span>
-        <span class="line"><span class="word outline">DASAN</span></span>
-      </h1>
-      <div class="hero__meta">
-        <p class="hero__role">AI/ML&nbsp;ENGINEER</p>
-        <p class="hero__thesis">I build and ship AI systems end to end — from vision-language document accessibility used daily by real teams, to blind radio-signal decoding, to bit-exact model quantization merged into llama.cpp.</p>
+      <div class="hero__top">
+        <p class="eyebrow"><span>B.E. CSE</span><span>Est. 2029</span><span>CGPA 8.03</span></p>
+        <p class="hero__index">01 — Intro</p>
       </div>
-      <div class="hero__cta">
-        <a class="btn btn--solid" href="#work" data-magnetic>See the work <svg viewBox="0 0 24 24" width="16" height="16"><path d="M5 12h14M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
-        <a class="btn btn--ghost" href="https://github.com/SomeNobody21112" target="_blank" rel="noopener" data-magnetic>GitHub</a>
+
+      <h1 class="hero__title">
+        <span class="l"><span class="w">Sri&nbsp;Ramaanuja</span></span>
+        <span class="l"><span class="w"><em>Dasan</em></span></span>
+      </h1>
+
+      <div class="hero__media">
+        <figure class="hero__fig">
+          <img src="assets/hero.jpg" alt="Sri Ramaanuja Dasan speaking at a podium" />
+          <figcaption>Presenting · 2026</figcaption>
+        </figure>
+        <div class="hero__say">
+          <p class="hero__role">AI/ML&nbsp;ENGINEER</p>
+          <p class="hero__thesis">I build and ship AI systems end to end — from vision-language document accessibility used daily by real teams, to blind radio-signal decoding, to bit-exact model quantization merged into llama.cpp.</p>
+          <a class="link-cta" href="#work" data-cursor><span>Selected work</span><i>↓</i></a>
+        </div>
       </div>
     </div>
-    <div class="hero__scroll" aria-hidden="true"><span>SCROLL</span><i></i></div>
+    <div class="hero__scroll" aria-hidden="true"><i></i><span>Scroll</span></div>
   </section>
 
   <!-- ░░ MARQUEE ░░ -->
   <div class="marquee" aria-hidden="true">
     <div class="marquee__track">
-      <span>Qwen2.5-VL</span><em>✦</em><span>FastAPI</span><em>✦</em><span>PyMuPDF</span><em>✦</em><span>GGUF Quantization</span><em>✦</em><span>Sentence Transformers</span><em>✦</em><span>Survival Analysis</span><em>✦</em><span>Viterbi Decoding</span><em>✦</em><span>React · TypeScript</span><em>✦</em><span>Docker · CI</span><em>✦</em>
-      <span>Qwen2.5-VL</span><em>✦</em><span>FastAPI</span><em>✦</em><span>PyMuPDF</span><em>✦</em><span>GGUF Quantization</span><em>✦</em><span>Sentence Transformers</span><em>✦</em><span>Survival Analysis</span><em>✦</em><span>Viterbi Decoding</span><em>✦</em><span>React · TypeScript</span><em>✦</em><span>Docker · CI</span><em>✦</em>
+      <span>Vision-Language</span><em>·</em><span>GGUF Quantization</span><em>·</em><span>Signal Decoding</span><em>·</em><span>Survival Analysis</span><em>·</em><span>Document AI</span><em>·</em>
+      <span>Vision-Language</span><em>·</em><span>GGUF Quantization</span><em>·</em><span>Signal Decoding</span><em>·</em><span>Survival Analysis</span><em>·</em><span>Document AI</span><em>·</em>
     </div>
   </div>
 
-  <!-- ░░ STATS ░░ -->
-  <section class="stats" id="stats">
-    <div class="wrap stats__grid">
-      <div class="stat" data-reveal>
-        <span class="stat__num" data-count="3" data-suffix="h→15m">3h</span>
-        <span class="stat__label">Document remediation, cut from ~3 hours to 10–20 min with RAWRS</span>
-      </div>
-      <div class="stat" data-reveal>
-        <span class="stat__num" data-count="1296" data-suffix="">0</span>
-        <span class="stat__label">Automated tests gating every architectural change in RAWRS</span>
-      </div>
-      <div class="stat" data-reveal>
-        <span class="stat__num" data-count="476781" data-suffix="">0</span>
-        <span class="stat__label">Lifecycle events analysed in Thadam's audit-intelligence engine</span>
-      </div>
-      <div class="stat" data-reveal>
-        <span class="stat__num" data-count="30" data-suffix="/30">0</span>
-        <span class="stat__label">Held-out signals decoded by ICHNOVA with zero false accepts</span>
-      </div>
+  <!-- ░░ WORK ░░ -->
+  <section class="work" id="work">
+    <div class="wrap">
+      <header class="sec-head">
+        <p class="sec-head__idx">02 — Selected Work</p>
+        <h2 class="sec-head__title">Things I built<br>and <em>shipped.</em></h2>
+      </header>
+
+      <ul class="worklist">
+        <li class="work-row" data-reveal>
+          <a href="https://github.com/winvinayainfosystemsindia/RAWRS---V1" target="_blank" rel="noopener" data-cursor="view">
+            <span class="work-row__no">01</span>
+            <span class="work-row__name">RAWRS</span>
+            <span class="work-row__desc">Vision-language document accessibility — used daily at WinVinaya. PDFs → accessible DOCX, ~3h to 10–20 min.</span>
+            <span class="work-row__stack">Qwen2.5-VL · FastAPI · React</span>
+            <span class="work-row__arrow">↗</span>
+          </a>
+        </li>
+        <li class="work-row" data-reveal>
+          <a href="https://github.com/SomeNobody21112/Thadam" target="_blank" rel="noopener" data-cursor="view">
+            <span class="work-row__no">02</span>
+            <span class="work-row__name">Thadam</span>
+            <span class="work-row__desc">Audit intelligence over 476,781 lifecycle events. Led a team of 6. Risk scores for inspectors, never verdicts.</span>
+            <span class="work-row__stack">Sentence Transformers · lifelines</span>
+            <span class="work-row__arrow">↗</span>
+          </a>
+        </li>
+        <li class="work-row" data-reveal>
+          <a href="https://github.com/SomeNobody21112/ICHNOVA" target="_blank" rel="noopener" data-cursor="view">
+            <span class="work-row__no">03</span>
+            <span class="work-row__name">ICHNOVA</span>
+            <span class="work-row__desc">Blind radio-signal decoder, built from first principles. 30/30 held-out, zero false accepts. Verified on real time signals.</span>
+            <span class="work-row__stack">NumPy · SciPy · Viterbi</span>
+            <span class="work-row__arrow">↗</span>
+          </a>
+        </li>
+      </ul>
     </div>
   </section>
 
-  <!-- ░░ WORK (bento) ░░ -->
-  <section class="work" id="work">
-    <div class="wrap">
-      <header class="sec-head" data-reveal>
-        <span class="sec-head__index">01</span>
-        <h2 class="sec-head__title">Selected<br><span class="outline">Work</span></h2>
-        <p class="sec-head__note">Four systems I designed, built, and shipped — each measured against benchmarks, not vibes.</p>
-      </header>
-
-      <div class="bento">
-        <!-- RAWRS big -->
-        <a class="card card--xl" href="https://github.com/winvinayainfosystemsindia/RAWRS---V1" target="_blank" rel="noopener" data-tilt data-reveal>
-          <div class="card__glow"></div>
-          <div class="card__top">
-            <span class="card__tag">Vision-Language · Production</span>
-            <span class="card__arrow">↗</span>
-          </div>
-          <h3 class="card__title">RAWRS</h3>
-          <p class="card__sub">Remediation &amp; Accessibility Work Reduction System</p>
-          <p class="card__body">Sole developer of a Qwen2.5-VL platform that WinVinaya's remediators use almost every day to turn PDFs into accessible DOCX for blind and low-vision readers. Alt-text generation, table detection, page numbering, DOCX preview. One internal document model → traceable, undoable WCAG output.</p>
-          <ul class="card__stack"><li>Python</li><li>FastAPI</li><li>Qwen2.5-VL</li><li>Docling</li><li>Surya OCR</li><li>React</li></ul>
-        </a>
-
-        <!-- Thadam -->
-        <a class="card card--md" href="https://github.com/SomeNobody21112/Thadam" target="_blank" rel="noopener" data-tilt data-reveal>
-          <div class="card__glow"></div>
-          <div class="card__top"><span class="card__tag">ML · Team Lead</span><span class="card__arrow">↗</span></div>
-          <h3 class="card__title">Thadam</h3>
-          <p class="card__sub">Audit intelligence for the MPLAD scheme</p>
-          <p class="card__body">Led a team of 6. Analyses 987 public works and 476,781 lifecycle events — MiniLM embeddings, learned archetypes, kNN peers, Cox survival models — into one audit-lead risk score. Leads for inspectors, never verdicts.</p>
-          <ul class="card__stack"><li>Sentence Transformers</li><li>lifelines</li><li>scikit-learn</li><li>Agentforce</li></ul>
-        </a>
-
-        <!-- ICHNOVA -->
-        <a class="card card--md" href="https://github.com/SomeNobody21112/ICHNOVA" target="_blank" rel="noopener" data-tilt data-reveal>
-          <div class="card__glow"></div>
-          <div class="card__top"><span class="card__tag">DSP · From First Principles</span><span class="card__arrow">↗</span></div>
-          <h3 class="card__title">ICHNOVA</h3>
-          <p class="card__sub">Blind signal analysis &amp; decoding</p>
-          <p class="card__body">Decodes a raw radio capture with no known settings: estimates carrier offset, symbol rate, modulation and phase, then brute-forces every FEC + interleaver combo and returns a result only if it's statistically significant. Verified on real WWV, WWVB, DCF77, MSF, JJY time signals.</p>
-          <ul class="card__stack"><li>NumPy</li><li>SciPy</li><li>Viterbi</li><li>React 19</li><li>Docker</li></ul>
-        </a>
+  <!-- ░░ ABOUT ░░ -->
+  <section class="about" id="about">
+    <div class="wrap about__grid">
+      <figure class="about__fig" data-reveal>
+        <img src="assets/portrait.jpg" alt="Portrait of Sri Ramaanuja Dasan" />
+      </figure>
+      <div class="about__body" data-reveal>
+        <p class="sec-head__idx">03 — About</p>
+        <h2 class="about__h">A second-year CSE student who ships like it's the job.</h2>
+        <p class="about__p">I'm building AI that reaches real users — a tool used daily at WinVinaya, a hackathon-grade audit engine, a signal decoder from first principles. I test design decisions against benchmarks and held-out sets, and I care about systems that stay reviewable and reversible. Long game: found my own company.</p>
+        <div class="about__awards">
+          <div><b>Winner ×2</b><span>SJIT internal Smart India Hackathon selection — 2025, 2026</span></div>
+          <div><b>3rd · Quantathon</b><span>SRM University</span></div>
+          <div><b>3rd · Cyberfest '26</b><span>KCG College of Technology</span></div>
+          <div><b>Special Mention</b><span>V-VORTEX, VIT Chennai · AgriSense at E-Summit, IIT Madras</span></div>
+        </div>
       </div>
     </div>
   </section>
@@ -151,75 +154,49 @@
   <!-- ░░ OPEN SOURCE ░░ -->
   <section class="os" id="opensource">
     <div class="wrap">
-      <header class="sec-head" data-reveal>
-        <span class="sec-head__index">02</span>
-        <h2 class="sec-head__title">Open<br><span class="outline">Source</span></h2>
-        <p class="sec-head__note">Contributing to the AI infrastructure I use.</p>
+      <header class="sec-head">
+        <p class="sec-head__idx">04 — Open Source</p>
+        <h2 class="sec-head__title">Contributing to the<br>infra I <em>use.</em></h2>
       </header>
-      <a class="os-card" href="https://github.com/ggml-org/llama.cpp/pull/30630" target="_blank" rel="noopener" data-tilt data-reveal>
-        <div class="card__glow"></div>
-        <div class="os-card__left">
+      <a class="os-card" href="https://github.com/ggml-org/llama.cpp/pull/30630" target="_blank" rel="noopener" data-cursor="view" data-reveal>
+        <div class="os-card__head">
           <span class="os-card__repo">ggml-org / llama.cpp</span>
-          <h3 class="os-card__title">NumPy Q1_0 &amp; Q2_0 quantization for gguf-py</h3>
-          <p class="os-card__body">Added 1-bit and 2-bit GGUF de/quantization to the Python library so tools can load models (e.g. Bonsai) that previously failed with <code>NotImplementedError</code>. Matched the C reference bit for bit — 66/66 checks across 27 quant types.</p>
+          <span class="os-card__badge">● Merged · PR #30630</span>
         </div>
-        <div class="os-card__right">
-          <span class="badge badge--merged">● Merged</span>
-          <span class="os-card__pr">PR #30630</span>
-        </div>
+        <h3 class="os-card__title">NumPy Q1_0 &amp; Q2_0 quantization for gguf-py</h3>
+        <p class="os-card__body">Added 1-bit and 2-bit GGUF de/quantization to the Python library so tools can load models (e.g. Bonsai) that previously failed with <code>NotImplementedError</code>. Matched the C reference bit for bit — 66/66 checks across 27 quant types.</p>
+        <span class="os-card__cta">Read the PR ↗</span>
       </a>
     </div>
   </section>
 
-  <!-- ░░ ABOUT / SKILLS ░░ -->
-  <section class="about" id="about">
-    <div class="wrap about__grid">
-      <div class="about__lead" data-reveal>
-        <span class="sec-head__index">03</span>
-        <h2 class="about__h">Second-year CSE student who ships like it's the job.</h2>
-        <p class="about__p">I'm building AI that reaches real users — a tool used daily at WinVinaya, a hackathon-grade audit engine, a signal decoder built from first principles. I test design decisions against benchmarks and held-out sets, and I care about systems that stay reviewable and reversible. Long game: found my own company.</p>
-        <div class="about__awards">
-          <div><b>Winner ×2</b><span>SJIT internal Smart India Hackathon selection (2025, 2026)</span></div>
-          <div><b>3rd · Quantathon</b><span>SRM University</span></div>
-          <div><b>3rd · Cyberfest '26</b><span>KCG College of Technology</span></div>
-          <div><b>Special Mention</b><span>V-VORTEX, VIT Chennai · presented AgriSense at E-Summit, IIT Madras</span></div>
-        </div>
-      </div>
-      <div class="about__skills" data-reveal>
-        <div class="skillgroup">
-          <h4>AI / Machine Learning</h4>
-          <div class="chips"><span>LLM integration</span><span>Qwen2.5-VL</span><span>Document CV</span><span>OCR</span><span>Sentence embeddings</span><span>Clustering</span><span>Anomaly detection</span><span>Survival analysis</span><span>GGUF quantization</span><span>Claude Code</span></div>
-        </div>
-        <div class="skillgroup">
-          <h4>Languages &amp; Frameworks</h4>
-          <div class="chips"><span>Python</span><span>TypeScript</span><span>React</span><span>Next.js</span><span>FastAPI</span><span>Pydantic</span><span>pandas</span><span>NumPy</span><span>SciPy</span></div>
-        </div>
-        <div class="skillgroup">
-          <h4>Docs · Accessibility · Tools</h4>
-          <div class="chips"><span>Docling</span><span>PyMuPDF</span><span>Surya OCR</span><span>python-docx</span><span>WCAG 2.x</span><span>Git</span><span>Docker</span><span>CI</span><span>pytest</span></div>
-        </div>
-      </div>
+  <!-- ░░ STATS ░░ -->
+  <section class="stats" id="stats">
+    <div class="wrap stats__grid">
+      <div class="stat" data-reveal><span class="stat__num" data-count="3" data-suffix="h→15m">3h</span><span class="stat__label">Remediation time cut with RAWRS</span></div>
+      <div class="stat" data-reveal><span class="stat__num" data-count="1296" data-suffix="">0</span><span class="stat__label">Tests gating every RAWRS change</span></div>
+      <div class="stat" data-reveal><span class="stat__num" data-count="476781" data-suffix="">0</span><span class="stat__label">Lifecycle events analysed in Thadam</span></div>
+      <div class="stat" data-reveal><span class="stat__num" data-count="30" data-suffix="/30">0</span><span class="stat__label">Signals decoded, 0 false accepts</span></div>
     </div>
   </section>
 
   <!-- ░░ CONTACT ░░ -->
   <section class="contact" id="contact">
     <div class="wrap">
-      <p class="contact__eyebrow" data-reveal>04 — Let's build</p>
-      <h2 class="contact__big" data-reveal>
-        <span class="line"><span class="word">LET'S&nbsp;MAKE</span></span>
-        <span class="line"><span class="word outline">SOMETHING</span></span>
-        <span class="line"><span class="word">REAL.</span></span>
+      <p class="sec-head__idx">05 — Contact</p>
+      <h2 class="contact__big">
+        <span class="l"><span class="w">Let's make</span></span>
+        <span class="l"><span class="w"><em>something</em> real.</span></span>
       </h2>
-      <div class="contact__links" data-reveal>
-        <a class="contact__link" href="https://github.com/SomeNobody21112" target="_blank" rel="noopener" data-magnetic>GitHub <i>↗</i></a>
-        <a class="contact__link" href="https://linkedin.com/in/sri-ramaanuja-dasan" target="_blank" rel="noopener" data-magnetic>LinkedIn <i>↗</i></a>
+      <div class="contact__links">
+        <a class="contact__link" href="https://github.com/SomeNobody21112" target="_blank" rel="noopener" data-cursor><span>GitHub</span><i>↗</i></a>
+        <a class="contact__link" href="https://linkedin.com/in/sri-ramaanuja-dasan" target="_blank" rel="noopener" data-cursor><span>LinkedIn</span><i>↗</i></a>
       </div>
     </div>
     <footer class="foot">
-      <span>© <span id="year">2026</span> Sri Ramaanuja Dasan</span>
-      <span>Chennai, India</span>
-      <span>Built with too much caffeine &amp; GSAP</span>
+      <span class="foot__c">© <span id="year">2026</span> — Sri Ramaanuja Dasan</span>
+      <span class="foot__m">Chennai · India</span>
+      <span class="foot__r">Designed in the dark</span>
     </footer>
   </section>
 
@@ -227,6 +204,7 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lenis@1.1.14/dist/lenis.min.js"></script>
 <script src="js/main.js"></script>
 </body>
 </html>
