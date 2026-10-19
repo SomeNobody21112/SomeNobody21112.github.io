@@ -25,10 +25,13 @@
     if (loader) loader.parentNode.removeChild(loader);
     initLenis(); // harmless if it bails
     initCursor();
+    initShell();
+    initTerminalType();
     return;
   }
 
   G.registerPlugin(ST);
+  initShell();
 
   /* ================= LENIS smooth scroll ================= */
   var lenis = null;
@@ -127,7 +130,8 @@
   initCursor();
 
   /* ================= code terminal typewriter ================= */
-  (function typeTerminal() {
+  initTerminalType();
+  function initTerminalType() {
     var code = document.getElementById("termCode");
     if (!code) return;
     // tokens: [text, class] — class c=comment, k=keyword, s=string, ""=plain
@@ -164,7 +168,111 @@
       ST.create({ trigger: ".term", start: "top 80%", once: true,
         onEnter: function () { if (!run.started) { run.started = true; step(); } } });
     } else { step(); }
-  })();
+  }
+
+  /* band parallax */
+  G.to(".band__fig img", { yPercent: -12, ease: "none",
+    scrollTrigger: { trigger: ".band", start: "top bottom", end: "bottom top", scrub: true } });
 
   addEventListener("load", function () { if (ST) ST.refresh(); });
+
+  /* ================= interactive shell ================= */
+  function initShell() {
+    var screen = document.getElementById("cliScreen");
+    var form = document.getElementById("cliForm");
+    var input = document.getElementById("cliInput");
+    var cli = document.getElementById("cli");
+    if (!screen || !form || !input) return;
+    var hist = [], hi = -1;
+
+    function esc(s) { return String(s).replace(/[&<>]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]; }); }
+    function pad(s, n) { s = String(s); return s.length >= n ? s : s + new Array(n - s.length + 1).join(" "); }
+    function out(html, cls) { var d = document.createElement("pre"); d.className = "row" + (cls ? " " + cls : ""); d.innerHTML = html; screen.appendChild(d); screen.scrollTop = screen.scrollHeight; }
+    function prompt(cmd) { out('<span class="mut">visitor@srd:~$</span> <span class="cmd">' + esc(cmd) + "</span>"); }
+
+    var projects = {
+      rawrs: ["RAWRS", "vision-language document accessibility · daily at WinVinaya", "https://github.com/winvinayainfosystemsindia/RAWRS---V1"],
+      thadam: ["Thadam", "audit intelligence over 476,781 lifecycle events", "https://github.com/SomeNobody21112/Thadam"],
+      ichnova: ["ICHNOVA", "blind radio-signal decoder, 30/30 held-out", "https://github.com/SomeNobody21112/ICHNOVA"],
+      llama: ["llama.cpp #30630", "merged NumPy Q1_0/Q2_0 GGUF quantization", "https://github.com/ggml-org/llama.cpp/pull/30630"]
+    };
+    function go(url) { try { window.open(url, "_blank", "noopener"); } catch (e) {} }
+
+    function neofetch() {
+      var art = ["   ____  ____  ____", "  / ___||  _ \\|  _ \\", "  \\___ \\| |_) | | | |", "   ___) |  _ <| |_| |", "  |____/|_| \\_\\____/"];
+      var info = ["visitor@srd", "-----------", "host: St. Joseph's Inst. of Tech", "role: AI / ML Engineer", "shell: zsh", "editor: VS Code · nvim", "stack: Python · TS · FastAPI · React", "merged: llama.cpp #30630", "uptime: 2nd year — shipping daily"];
+      var n = Math.max(art.length, info.length), rows = [];
+      for (var i = 0; i < n; i++) rows.push('<span class="asc">' + esc(pad(art[i] || "", 24)) + '</span><span class="mut">' + esc(info[i] || "") + "</span>");
+      return rows.join("\n");
+    }
+
+    var commands = {
+      help: function () {
+        return ['<span class="hd">commands</span>',
+          '  <span class="cmd">whoami</span>     who I am',
+          '  <span class="cmd">about</span>      the longer version',
+          '  <span class="cmd">ls</span>         list projects',
+          '  <span class="cmd">open</span> &lt;x&gt;   open one (rawrs · thadam · ichnova · llama)',
+          '  <span class="cmd">skills</span>     the toolkit',
+          '  <span class="cmd">contact</span>    where to find me',
+          '  <span class="cmd">neofetch</span>   system info',
+          '  <span class="cmd">clear</span>      clear the screen'].join("\n");
+      },
+      whoami: function () { return "sri ramaanuja dasan — 2nd-yr CSE, Chennai. builds &amp; ships AI end to end."; },
+      about: function () { return "I build AI that reaches real users — a tool used daily at WinVinaya, a hackathon-grade audit engine, a signal decoder from first principles. I measure against benchmarks and keep systems reviewable and reversible. Long game: found my own company."; },
+      ls: function () { return Object.keys(projects).map(function (k) { var p = projects[k]; return '<span class="cmd">' + pad(k, 10) + '</span><span class="mut">' + esc(p[1]) + "</span>"; }).join("\n"); },
+      open: function (a) {
+        if (!a) return "usage: open &lt;rawrs|thadam|ichnova|llama&gt;";
+        var p = projects[a.toLowerCase()];
+        if (!p) return "not found: " + esc(a) + " — try: " + Object.keys(projects).join(", ");
+        go(p[2]); return 'opening <a href="' + p[2] + '" target="_blank" rel="noopener">' + esc(p[0]) + "</a> …";
+      },
+      skills: function () {
+        return ['<span class="mut">ml   </span> Qwen2.5-VL · embeddings · anomaly/survival · GGUF quant',
+          '<span class="mut">lang </span> Python · TypeScript · React · FastAPI',
+          '<span class="mut">ops  </span> Docker · CI · pytest · git'].join("\n");
+      },
+      contact: function () {
+        return ['github   <a href="https://github.com/SomeNobody21112" target="_blank" rel="noopener">@SomeNobody21112</a>',
+          'linkedin <a href="https://linkedin.com/in/sri-ramaanuja-dasan" target="_blank" rel="noopener">in/sri-ramaanuja-dasan</a>',
+          'site     <a href="https://somenobody21112.github.io" target="_blank" rel="noopener">somenobody21112.github.io</a>'].join("\n");
+      },
+      github: function () { go("https://github.com/SomeNobody21112"); return "opening GitHub …"; },
+      linkedin: function () { go("https://linkedin.com/in/sri-ramaanuja-dasan"); return "opening LinkedIn …"; },
+      neofetch: function () { return neofetch(); },
+      echo: function (a) { return esc(a || ""); },
+      date: function () { return esc(new Date().toString()); },
+      sudo: function () { return "nice try. this incident will be reported. 🙂"; },
+      history: function () { return hist.length ? hist.map(function (h, i) { return "  " + (i + 1) + "  " + esc(h); }).join("\n") : "(empty)"; },
+      clear: function () { screen.innerHTML = ""; return null; }
+    };
+    commands.projects = commands.ls;
+    commands.man = commands.help;
+
+    function run(line) {
+      prompt(line);
+      var parts = line.trim().split(/\s+/);
+      var name = (parts.shift() || "").toLowerCase();
+      if (!name) return;
+      hist.push(line); hi = hist.length;
+      var fn = commands[name];
+      if (!fn) { out('command not found: ' + esc(name) + ' — type <span class="cmd">help</span>'); return; }
+      var r = fn(parts.join(" "));
+      if (r != null) out(r);
+    }
+
+    form.addEventListener("submit", function (e) { e.preventDefault(); var v = input.value; input.value = ""; run(v); });
+    input.addEventListener("keydown", function (e) {
+      if (e.key === "ArrowUp") { e.preventDefault(); if (hi > 0) { hi--; input.value = hist[hi] || ""; } }
+      else if (e.key === "ArrowDown") { e.preventDefault(); if (hi < hist.length - 1) { hi++; input.value = hist[hi] || ""; } else { hi = hist.length; input.value = ""; } }
+      else if (e.key === "Tab") {
+        e.preventDefault();
+        var pre = input.value.trim().toLowerCase();
+        if (pre) { var m = Object.keys(commands).filter(function (k) { return k.indexOf(pre) === 0; }); if (m.length === 1) input.value = m[0] + " "; }
+      }
+    });
+    if (cli) cli.addEventListener("click", function (e) { if (e.target.tagName !== "A") input.focus(); });
+
+    out('<span class="mut"># srd.sh — interactive shell. type </span><span class="cmd">help</span><span class="mut"> to begin.</span>');
+  }
 })();
