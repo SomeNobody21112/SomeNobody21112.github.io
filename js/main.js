@@ -388,7 +388,7 @@
     var amount = function () { return Math.max(0, track.scrollWidth - vp.offsetWidth); };
     G.to(track, { x: function () { return -amount(); }, ease: "none",
       scrollTrigger: { trigger: sec, start: "top top",
-        end: function () { return "+=" + amount(); },
+        end: function () { return "+=" + (amount() * 1.7 + 1); },
         pin: true, scrub: 0.6, anticipatePin: 1, invalidateOnRefresh: true } });
   }
 
