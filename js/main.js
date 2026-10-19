@@ -282,47 +282,50 @@
     out('<span class="mut"># srd.sh — interactive shell. type </span><span class="cmd">help</span><span class="mut"> to begin.</span>');
   }
 
-  /* ============ site-wide ambient flow field (fixed backdrop) ============ */
+  /* ================= ambient flow field (section) ================= */
   function initField() {
-    var cv = document.getElementById("bgField");
+    var cv = document.getElementById("fieldCanvas");
     if (!cv || !cv.getContext) return;
     var ctx = cv.getContext("2d");
-    var dpr = Math.min(1.5, window.devicePixelRatio || 1);
+    var dpr = Math.min(1.6, window.devicePixelRatio || 1);
+    var sec = document.getElementById("field");
     var W = 0, H = 0;
     function size() {
-      W = window.innerWidth; H = window.innerHeight;
+      var r = cv.getBoundingClientRect(); W = r.width; H = r.height;
       cv.width = Math.max(1, Math.floor(W * dpr)); cv.height = Math.max(1, Math.floor(H * dpr));
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      ctx.fillStyle = "#0a0a0a"; ctx.fillRect(0, 0, W, H);
+      ctx.fillStyle = "#060606"; ctx.fillRect(0, 0, W, H);
     }
     size();
     // layered-sine pseudo-noise field (cheap, no library)
     function ang(x, y, t) { return (Math.sin(x * 0.0016 + t * 0.0003) + Math.cos(y * 0.0015 - t * 0.00024) + Math.sin((x + y) * 0.0009 + t * 0.0004)) * 1.7; }
 
     if (reduce) { // static etched field, no animation
-      ctx.strokeStyle = "rgba(236,233,227,.07)"; ctx.lineWidth = 1;
-      for (var i = 0; i < 2600; i++) { var x = Math.random() * W, y = Math.random() * H, a = ang(x, y, 0); ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + Math.cos(a) * 7, y + Math.sin(a) * 7); ctx.stroke(); }
+      ctx.strokeStyle = "rgba(236,233,227,.14)"; ctx.lineWidth = 1;
+      for (var i = 0; i < 2200; i++) { var x = Math.random() * W, y = Math.random() * H, a = ang(x, y, 0); ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + Math.cos(a) * 7, y + Math.sin(a) * 7); ctx.stroke(); }
       return;
     }
 
-    var mouse = { x: -1e4, y: -1e4 };              // fixed canvas == viewport coords
-    window.addEventListener("mousemove", function (e) { mouse.x = e.clientX; mouse.y = e.clientY; }, { passive: true });
-    window.addEventListener("mouseout", function (e) { if (!e.relatedTarget) { mouse.x = mouse.y = -1e4; } });
-    var n = Math.min(900, Math.floor(W * H / 2400)), ps = [];   // subtle: fewer particles
-    for (var k = 0; k < n; k++) ps.push({ x: Math.random() * W, y: Math.random() * H, life: Math.random() * 220 | 0 });
+    var mouse = { x: -1e4, y: -1e4 };
+    if (sec) {
+      sec.addEventListener("mousemove", function (e) { var r = cv.getBoundingClientRect(); mouse.x = e.clientX - r.left; mouse.y = e.clientY - r.top; });
+      sec.addEventListener("mouseleave", function () { mouse.x = mouse.y = -1e4; });
+    }
+    var n = Math.min(1100, Math.floor(W * H / 1600)), ps = [];
+    for (var k = 0; k < n; k++) ps.push({ x: Math.random() * W, y: Math.random() * H, life: Math.random() * 180 | 0 });
     var t = 0, raf = 0, running = false;
     function frame() {
       if (!running) return;
       t++;
-      ctx.fillStyle = "rgba(10,10,10,.09)"; ctx.fillRect(0, 0, W, H);
+      ctx.fillStyle = "rgba(6,6,6,.072)"; ctx.fillRect(0, 0, W, H);
       for (var i = 0; i < ps.length; i++) {
         var p = ps[i], px = p.x, py = p.y, a = ang(p.x, p.y, t);
-        var vx = Math.cos(a) * 1.05, vy = Math.sin(a) * 1.05;
+        var vx = Math.cos(a) * 1.1, vy = Math.sin(a) * 1.1;
         var dx = p.x - mouse.x, dy = p.y - mouse.y, d2 = dx * dx + dy * dy, near = d2 < 16000;
         if (near) { var d = Math.sqrt(d2) || 1, f = (1 - d / 126) * 2.6; vx += dx / d * f; vy += dy / d * f; }
         p.x += vx; p.y += vy; p.life--;
-        if (p.life < 0 || p.x < 0 || p.x > W || p.y < 0 || p.y > H) { p.x = Math.random() * W; p.y = Math.random() * H; p.life = 80 + (Math.random() * 200 | 0); continue; }
-        ctx.strokeStyle = near ? "rgba(229,36,58,.5)" : "rgba(236,233,227,.1)";   // dim so text stays readable
+        if (p.life < 0 || p.x < 0 || p.x > W || p.y < 0 || p.y > H) { p.x = Math.random() * W; p.y = Math.random() * H; p.life = 60 + (Math.random() * 160 | 0); continue; }
+        ctx.strokeStyle = near ? "rgba(229,36,58,.55)" : "rgba(236,233,227,.16)";
         ctx.lineWidth = near ? 1.3 : 0.8;
         ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(p.x, p.y); ctx.stroke();
       }
@@ -330,8 +333,9 @@
     }
     function start() { if (!running) { running = true; frame(); } }
     function stop() { running = false; cancelAnimationFrame(raf); }
-    document.addEventListener("visibilitychange", function () { document.hidden ? stop() : start(); });
-    start();
+    if ("IntersectionObserver" in window && sec) {
+      new IntersectionObserver(function (en) { en.forEach(function (e) { e.isIntersecting ? start() : stop(); }); }, { threshold: 0.02 }).observe(sec);
+    } else { start(); }
     var rt; addEventListener("resize", function () { clearTimeout(rt); rt = setTimeout(size, 200); });
   }
 })();
