@@ -80,14 +80,14 @@
   var counter = { v: 0 };
 
   var tl = G.timeline();
-  tl.to(counter, { v: 100, duration: 1.6, ease: "power2.inOut",
-      onUpdate: function () { if (numEl) numEl.textContent = Math.round(counter.v); } }, 0)
-    .to(fillEl, { width: "100%", duration: 1.6, ease: "power2.inOut" }, 0)
-    .to(".loader__img", { clipPath: "inset(0% 0 0 0)", duration: 1.1, ease: "power3.out" }, 0.25)
+  tl.to(counter, { v: 100, duration: 3.8, ease: "power1.inOut",
+      onUpdate: function () { if (numEl) numEl.textContent = String(Math.round(counter.v)).padStart(3, "0"); } }, 0)
+    .to(fillEl, { width: "100%", duration: 3.8, ease: "power1.inOut" }, 0)
+    .to(".loader__img", { clipPath: "inset(0% 0 0 0)", duration: 1.8, ease: "power3.out" }, 0.6)
     .to(".loader__meta, .loader__bar, .loader__count, .loader__frame",
-        { opacity: 0, duration: 0.5, ease: "power2.in" }, 1.75)
-    .to(loader, { yPercent: -100, duration: 0.9, ease: "power4.inOut" }, 1.95)
-    .add(startHero, 2.2)
+        { opacity: 0, duration: 0.5, ease: "power2.in" }, 4.0)
+    .to(loader, { yPercent: -100, duration: 0.9, ease: "power4.inOut" }, 4.2)
+    .add(startHero, 4.45)
     .set(loader, { display: "none" });
 
   function startHero() {

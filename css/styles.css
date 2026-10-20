@@ -237,7 +237,7 @@ html.js .hero__fig img{ clip-path:inset(0 0 100% 0); }
 @media (max-width:620px){ .quant__stage{ aspect-ratio:4/5; } }
 
 /* ---------- kinetic type (scroll-velocity weight) ---------- */
-.sec-head__title, .field__title{ font-variation-settings:"opsz" 144, "wght" var(--kw,300); }
+.sec-head__title, .field__title{ font-variation-settings:"opsz" 144, "wght" 330; }
 .mask-line{ display:block; overflow:hidden; padding:.08em .05em .2em; margin:-.08em -.05em -.2em; }
 
 /* ---------- about ---------- */
