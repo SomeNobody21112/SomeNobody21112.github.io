@@ -28,6 +28,10 @@
 
   var reduce = matchMedia("(prefers-reduced-motion:reduce)").matches;
   var WA = "https://wa.me/917305289070"; // "his dad" — never announced as WhatsApp up front
+  // His real brain: an open-source LLM (Qwen2.5-1.5B) on Cloud Run — see /server.
+  // Paste the Cloud Run URL here (no trailing slash) to switch him from the built-in
+  // keyword agent to the real model. Empty = instant keyword Vladimir, no network calls.
+  var BRAIN_URL = "";
 
   // positions are in cat-world pixels (layout coords, scroll-independent)
   var S = {
@@ -428,16 +432,55 @@
     return { text: pick(LINES.fallback) };
   }
 
+  var chatHist = [];                 // {role, content} turns for the LLM
+  function catReply(text, dad) {
+    say(text.length > 118 ? text.slice(0, 115) + "…" : text, 6000);
+    logLine("cat", text, dad ? dadButton() : null);
+    chatHist.push({ role: "assistant", content: text });
+    if (chatHist.length > 8) chatHist = chatHist.slice(-8);
+    meow();
+  }
+
   if (form) form.addEventListener("submit", function (e) {
     e.preventDefault(); unlockAudio();
     var v = (ask.value || "").trim(); if (!v) return;
     logLine("you", v); ask.value = "";
-    var a = agent(v);
-    setTimeout(function () {
-      say(a.text.length > 118 ? a.text.slice(0, 115) + "…" : a.text, 6000);
-      logLine("cat", a.text, a.dad ? dadButton() : null);
-      meow();
-    }, 320);
+    chatHist.push({ role: "user", content: v });
+
+    if (!BRAIN_URL) {                // no brain wired up → instant keyword Vladimir
+      var a = agent(v);
+      setTimeout(function () { catReply(a.text, a.dad); }, 320);
+      return;
+    }
+
+    // real brain: ask Cloud Run, fall back to the keyword agent on any trouble
+    var thinking = null;
+    if (logEl) {
+      thinking = document.createElement("div");
+      thinking.className = "cat-log__row cat-log__row--cat cat-log__row--think";
+      thinking.innerHTML = '<span class="cat-log__who">Vladimir</span><span class="cat-log__txt">…thinking</span>';
+      logEl.appendChild(thinking); logEl.scrollTop = logEl.scrollHeight;
+    }
+    say("…", 30000);
+    var done = false, ctrl = ("AbortController" in window) ? new AbortController() : null;
+    var timer = setTimeout(function () { if (!done && ctrl) ctrl.abort(); }, 28000);
+    function clearThink() { if (thinking && thinking.parentNode) thinking.parentNode.removeChild(thinking); }
+    function fallback() { if (done) return; done = true; clearTimeout(timer); clearThink(); var a = agent(v); catReply(a.text, a.dad); }
+
+    fetch(BRAIN_URL.replace(/\/+$/, "") + "/ask", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message: v, history: chatHist.slice(0, -1) }),
+      signal: ctrl ? ctrl.signal : undefined
+    })
+      .then(function (r) { if (!r.ok) throw 0; return r.json(); })
+      .then(function (d) {
+        if (done) return;
+        var txt = d && d.reply ? String(d.reply) : "";
+        if (!txt) throw 0;
+        done = true; clearTimeout(timer); clearThink();
+        catReply(txt, !!(d && d.dad));
+      })
+      .catch(fallback);
   });
 
   /* --------------------------------------------------------------- lines */
