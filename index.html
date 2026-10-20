@@ -46,8 +46,9 @@
   <a class="nav__mark" href="#top" data-cursor>SRD<span>®</span></a>
   <nav class="nav__links">
     <a href="#work" data-cursor>Work</a>
-    <a href="#about" data-cursor>About</a>
+    <a href="#experience" data-cursor>Path</a>
     <a href="#opensource" data-cursor>Open Source</a>
+    <a href="assets/resume.pdf" target="_blank" rel="noopener" data-cursor>Résumé</a>
     <a href="#contact" data-cursor>Contact</a>
   </nav>
   <div class="nav__right">
@@ -213,6 +214,79 @@
   </section>
 
 
+  <!-- ░░ STACK ░░ -->
+  <section class="stack" id="stack">
+    <div class="wrap">
+      <header class="sec-head">
+        <p class="sec-head__idx">— the toolbox</p>
+        <h2 class="sec-head__title">What I reach <em>for.</em></h2>
+      </header>
+      <div class="stack__grid">
+        <div class="stack__col" data-reveal>
+          <p class="stack__k">AI / ML</p>
+          <ul class="stack__list"><li>Qwen2.5-VL</li><li>Sentence Transformers</li><li>scikit-learn</li><li>GGUF quantization</li><li>Survival analysis</li><li>Viterbi / cumulants</li></ul>
+        </div>
+        <div class="stack__col" data-reveal>
+          <p class="stack__k">Languages &amp; frameworks</p>
+          <ul class="stack__list"><li>Python</li><li>TypeScript</li><li>React</li><li>Next.js</li><li>FastAPI</li><li>Pydantic</li><li>Tailwind</li></ul>
+        </div>
+        <div class="stack__col" data-reveal>
+          <p class="stack__k">Data &amp; documents</p>
+          <ul class="stack__list"><li>NumPy</li><li>SciPy</li><li>pandas</li><li>Docling</li><li>PyMuPDF</li><li>Surya OCR</li><li>python-docx</li><li>WCAG 2.x</li></ul>
+        </div>
+        <div class="stack__col" data-reveal>
+          <p class="stack__k">Tooling</p>
+          <ul class="stack__list"><li>Git</li><li>Docker</li><li>CI</li><li>pytest</li><li>Vercel</li><li>Firebase</li></ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ░░ EXPERIENCE (timeline) ░░ -->
+  <section class="xp" id="experience">
+    <div class="wrap">
+      <header class="sec-head">
+        <p class="sec-head__idx">— the path so far</p>
+        <h2 class="sec-head__title">How I got <em>here.</em></h2>
+      </header>
+      <ol class="xp__line">
+        <li class="xp__item" data-reveal>
+          <span class="xp__when">Jun 2026 — Present</span>
+          <div class="xp__body">
+            <h3 class="xp__role">Software Engineer Intern — AI Document Intelligence &amp; Accessibility</h3>
+            <p class="xp__org">WinVinaya InfoSystems · Bangalore</p>
+            <p class="xp__p">Sole developer of RAWRS, a Qwen2.5-VL document-accessibility platform remediators use almost daily — ~3h per document down to 10–20 min. Cut reviewer workload ~70% by finding and merging ~385 duplicate checks, no evidence dropped.</p>
+          </div>
+        </li>
+        <li class="xp__item" data-reveal>
+          <span class="xp__when">Oct 2026</span>
+          <div class="xp__body">
+            <h3 class="xp__role">Open-source contributor — llama.cpp</h3>
+            <p class="xp__org">ggml-org · PR #30630, merged</p>
+            <p class="xp__p">Added NumPy Q1_0 &amp; Q2_0 GGUF de/quantization to gguf-py so Python tools can load 1- and 2-bit models. Bit-exact with the C reference — 66/66 checks across 27 quant types.</p>
+          </div>
+        </li>
+        <li class="xp__item" data-reveal>
+          <span class="xp__when">2026 · SIH</span>
+          <div class="xp__body">
+            <h3 class="xp__role">Thadam — team lead of 6 · ICHNOVA — sole developer</h3>
+            <p class="xp__org">Smart India Hackathon 2026</p>
+            <p class="xp__p">Thadam: audit intelligence over 476,781 lifecycle events — sentence embeddings, learned archetypes, Cox survival risk. ICHNOVA: a blind radio-signal decoder from first principles — 30/30 held-out, 0 false accepts, verified on real WWV / WWVB / DCF77 signals.</p>
+          </div>
+        </li>
+        <li class="xp__item" data-reveal>
+          <span class="xp__when">2025 — 2029</span>
+          <div class="xp__body">
+            <h3 class="xp__role">B.E. Computer Science &amp; Engineering</h3>
+            <p class="xp__org">St. Joseph's Institute of Technology, Chennai · CGPA 8.03</p>
+            <p class="xp__p">2× winner of SJIT's internal Smart India Hackathon selection (2025, 2026). 3rd — Quantathon (SRM) · 3rd — Cyberfest '26 (KCG) · Special Mention — V-VORTEX (VIT Chennai).</p>
+          </div>
+        </li>
+      </ol>
+      <a class="xp__resume link-cta" href="assets/resume.pdf" target="_blank" rel="noopener" data-cursor><span>Full résumé — PDF</span><i>↗</i></a>
+    </div>
+  </section>
+
   <!-- ░░ ASCII PORTRAIT (interactive) ░░ -->
   <section class="ascii" id="ascii" aria-label="Interactive ASCII portrait">
     <div class="wrap ascii__wrap">
@@ -245,6 +319,24 @@
         <p class="os-card__body">Added 1-bit and 2-bit GGUF de/quantization to the Python library so tools can load models (e.g. Bonsai) that previously failed with <code>NotImplementedError</code>. Matched the C reference bit for bit — 66/66 checks across 27 quant types.</p>
         <span class="os-card__cta">Read the PR ↗</span>
       </a>
+    </div>
+  </section>
+
+  <!-- ░░ GITHUB (live) ░░ -->
+  <section class="gh" id="github" aria-label="Live GitHub activity">
+    <div class="wrap">
+      <header class="sec-head">
+        <p class="sec-head__idx">— live from GitHub</p>
+        <h2 class="sec-head__title">Receipts, <em>fetched live.</em></h2>
+      </header>
+      <div class="gh__stats" id="ghStats" data-reveal>
+        <div class="gh__stat"><span class="gh__num" data-gh="repos">—</span><span class="gh__label">Public repos</span></div>
+        <div class="gh__stat"><span class="gh__num" data-gh="langs">—</span><span class="gh__label">Languages shipped</span></div>
+        <div class="gh__stat"><span class="gh__num" data-gh="active">—</span><span class="gh__label">Last pushed</span></div>
+        <div class="gh__stat"><span class="gh__num" data-gh="since">—</span><span class="gh__label">On GitHub since</span></div>
+      </div>
+      <ul class="gh__repos" id="ghRepos" aria-live="polite"></ul>
+      <p class="gh__note" id="ghNote">fetching @SomeNobody21112 …</p>
     </div>
   </section>
 
@@ -295,6 +387,7 @@
         <a class="contact__link" href="mailto:sriramaanujadasan2007@gmail.com" data-cursor><span>Email</span><i>↗</i></a>
         <a class="contact__link" href="https://github.com/SomeNobody21112" target="_blank" rel="noopener" data-cursor><span>GitHub</span><i>↗</i></a>
         <a class="contact__link" href="https://linkedin.com/in/sri-ramaanuja-dasan" target="_blank" rel="noopener" data-cursor><span>LinkedIn</span><i>↗</i></a>
+        <a class="contact__link" href="assets/resume.pdf" target="_blank" rel="noopener" data-cursor><span>Résumé</span><i>↗</i></a>
       </div>
       <p class="contact__direct">
         <a href="mailto:sriramaanujadasan2007@gmail.com">sriramaanujadasan2007@gmail.com</a>

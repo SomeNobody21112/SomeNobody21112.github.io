@@ -47,6 +47,7 @@
     initWork();
     initAscii();
     initQuant();
+    initGithub();
     return;
   }
 
@@ -160,6 +161,7 @@
   initWork();
   initAscii();
   initQuant();
+  initGithub();
   initObys();
 
   /* ================= code terminal typewriter ================= */
@@ -608,5 +610,50 @@
     else start();
     window.addEventListener("themechange", function () { if (!running) draw(3.2); });
     var rt2; addEventListener("resize", function () { clearTimeout(rt2); rt2 = setTimeout(function () { size(); if (reduce) draw(3.2); }, 200); });
+  }
+
+  /* ================= live GitHub stats ================= */
+  function initGithub() {
+    var wrap = document.getElementById("ghStats"),
+        list = document.getElementById("ghRepos"),
+        note = document.getElementById("ghNote");
+    if (!wrap) return;
+    var U = "SomeNobody21112";
+    function set(k, v) { var el = wrap.querySelector('[data-gh="' + k + '"]'); if (el) el.textContent = v; }
+    function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+    function mon(d) { return new Date(d).toLocaleDateString("en-US", { month: "short", year: "numeric" }); }
+    function fail() { if (note) note.textContent = "GitHub is rate-limited right now — see github.com/" + U; }
+
+    fetch("https://api.github.com/users/" + U)
+      .then(function (r) { if (!r.ok) throw 0; return r.json(); })
+      .then(function (u) {
+        set("repos", u.public_repos);
+        set("since", new Date(u.created_at).getFullYear());
+        return fetch("https://api.github.com/users/" + U + "/repos?per_page=100&sort=pushed");
+      })
+      .then(function (r) { if (!r.ok) throw 0; return r.json(); })
+      .then(function (repos) {
+        if (!Array.isArray(repos)) throw 0;
+        var own = repos.filter(function (x) { return !x.fork; });
+        var langs = {}; own.forEach(function (x) { if (x.language) langs[x.language] = 1; });
+        set("langs", Object.keys(langs).length);
+        var last = own.reduce(function (m, x) { var d = new Date(x.pushed_at); return d > m ? d : m; }, new Date(0));
+        set("active", last > new Date(0) ? mon(last) : "—");
+        var top = own.filter(function (x) { return x.name.toLowerCase() !== U.toLowerCase(); })
+          .sort(function (a, b) {
+            return ((b.description ? 1 : 0) - (a.description ? 1 : 0)) ||
+                   (b.stargazers_count - a.stargazers_count) ||
+                   (new Date(b.pushed_at) - new Date(a.pushed_at));
+          })
+          .slice(0, 6);
+        if (list) list.innerHTML = top.map(function (x) {
+          var star = x.stargazers_count > 0 ? "  ·  ★ " + x.stargazers_count : "";
+          return '<li class="gh__repo"><a href="' + esc(x.html_url) + '" target="_blank" rel="noopener" data-cursor>' + esc(x.name) + ' ↗</a>' +
+            '<p>' + (x.description ? esc(x.description) : "—") + '</p>' +
+            '<span class="gh__meta">' + (x.language ? esc(x.language) : "—") + star + '  ·  ' + mon(x.pushed_at) + '</span></li>';
+        }).join("");
+        if (note) note.textContent = "live · api.github.com/users/" + U;
+      })
+      .catch(fail);
   }
 })();
