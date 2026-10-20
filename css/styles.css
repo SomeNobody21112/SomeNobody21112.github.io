@@ -432,7 +432,17 @@ a:focus-visible{ outline:2px solid var(--fg); outline-offset:4px; }
 .catyard__sub{ max-width:60ch; margin-top:14px; color:var(--muted); font-size:15px; line-height:1.6; }
 
 /* play floor — no panel, same ground as the rest of the site */
-.cat-floor{ position:relative; margin-top:26px; height:clamp(360px,52vh,520px); }
+.cat-floor{ position:relative; margin-top:26px; height:clamp(360px,52vh,520px); perspective:640px; overflow:hidden; }
+/* a receding 3D floor plane — grid tiles tilt away to a soft horizon, so he reads as standing in space */
+.cat-floor::before{ content:""; position:absolute; left:-30%; right:-30%; bottom:0; height:66%; z-index:0; pointer-events:none;
+  transform:rotateX(64deg); transform-origin:bottom center;
+  background:
+    linear-gradient(var(--line) 1px, transparent 1px) 0 0 / 100% 36px,
+    linear-gradient(90deg, var(--line) 1px, transparent 1px) 0 0 / 36px 100%;
+  -webkit-mask-image:linear-gradient(to top, #000 6%, transparent 90%);
+          mask-image:linear-gradient(to top, #000 6%, transparent 90%); }
+.cat-floor::after{ content:""; position:absolute; left:0; right:0; bottom:40%; height:44%; z-index:0; pointer-events:none;
+  background:radial-gradient(130% 80% at 50% 100%, var(--surface), transparent 72%); }
 .cat-floor__affection{ position:absolute; top:6px; left:2px; z-index:5; display:flex; align-items:center; gap:8px;
   font-family:var(--mono); font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); }
 .cat-floor__bar{ width:92px; height:5px; border-radius:3px; background:var(--faint); overflow:hidden; }
@@ -501,7 +511,7 @@ a:focus-visible{ outline:2px solid var(--fg); outline-offset:4px; }
 .cat-treat.is-eaten{ opacity:0; transform:translate(-50%,-50%) scale(.2); transition:.25s; }
 .cat-laser{ position:absolute; width:14px; height:14px; transform:translate(-50%,-50%); border-radius:50%;
   background:radial-gradient(circle,rgb(255,64,64),#c40000); box-shadow:0 0 12px 4px rgba(255,40,40,.65); z-index:4; pointer-events:none; }
-.cat-heart{ position:absolute; width:17px; transform:translate(-50%,-50%); pointer-events:none; z-index:6; animation:catHeart 1.1s ease-out forwards; }
+.cat-heart{ position:absolute; width:19px; transform:translate(-50%,-50%); pointer-events:none; z-index:9; animation:catHeart 1.1s ease-out forwards; }
 .cat-heart svg{ display:block; width:100%; height:auto; fill:#d9504d; }
 .cat-floor.is-laser{ cursor:crosshair; }
 @keyframes catPop{ 0%{ transform:translate(-50%,-50%) scale(.2) } 60%{ transform:translate(-50%,-50%) scale(1.15) } 100%{ transform:translate(-50%,-50%) scale(1) } }

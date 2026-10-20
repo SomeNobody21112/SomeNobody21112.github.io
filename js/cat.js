@@ -41,7 +41,14 @@
 
   function clamp(v, a, b) { return v < a ? a : v > b ? b : v; }
   function rand(a, b) { return a + Math.random() * (b - a); }
-  function pick(a) { return a[(Math.random() * a.length) | 0]; }
+  var _lastPick = (typeof WeakMap !== "undefined") ? new WeakMap() : null;
+  function pick(a) {                              // no immediate repeats — he never says the same line twice in a row
+    if (!a || !a.length) return undefined;
+    if (a.length === 1 || !_lastPick) return a[(Math.random() * a.length) | 0];
+    var last = _lastPick.get(a), v;
+    do { v = a[(Math.random() * a.length) | 0]; } while (v === last);
+    _lastPick.set(a, v); return v;
+  }
 
   /* ================= procedural pixel puppet — shaded black cat ====================
      Drawn facing RIGHT into a 64x40 offscreen buffer, then nearest-neighbour upscaled
@@ -216,6 +223,9 @@
   function catInFloorPx() { var f = floorBox(); return { x: S.px - f.x, y: S.py - f.y }; }
   function perchPos() { var b = wrect(box); return { x: b.x + Math.min(b.w * 0.40, 520), y: b.y + 14 }; } // naps on the "loading…" word
   function housePos() { var f = floorBox(); return { x: f.x + f.w * 0.22, y: f.y + f.h * 0.82 }; } // his house
+  // full roam range = the whole cat-world: the "next one's loading" field down through the play area
+  function roamBox() { return wrect(world); }
+  function roamWorld(fx, fy) { var b = roamBox(); return { x: b.x + fx * b.w, y: b.y + fy * b.h }; }
 
   /* ------------------------------------------------------------------ speech */
   var bubbleTimer;
@@ -247,13 +257,13 @@
     if (bar) bar.style.width = S.affection + "%";
   }
   function hearts(n) {
-    var c = catInFloorPx();
+    // float just above him in world coords, appended to cat-world so they paint ABOVE the cat
     for (var i = 0; i < (n || 3); i++) {
       var h = document.createElement("div");
       h.className = "cat-heart"; h.innerHTML = HEART;
-      h.style.left = (c.x + rand(-26, 26)) + "px";
-      h.style.top = (c.y - rand(14, 54)) + "px";
-      stage.appendChild(h);
+      h.style.left = (S.px + rand(-22, 22)) + "px";
+      h.style.top = (S.py - rand(18, 58)) + "px";
+      world.appendChild(h);
       (function (el) { setTimeout(function () { el.remove(); }, 1100); })(h);
     }
   }
@@ -333,7 +343,7 @@
     setTimeout(function () { cat.classList.remove("is-happy"); }, 900);
     petCount++; clearTimeout(petReset); petReset = setTimeout(function () { petCount = 0; }, 6000);
     if (S.reached) say(pick(LINES.pet), 3200);
-    if (S.reached && S.affection > 62 && Math.random() < 0.5) offerDad(true);
+    if (S.reached && S.affection > 62 && !S.dadOffered && Math.random() < 0.5) { S.dadOffered = true; offerDad(true); }
   }
   cat.addEventListener("click", function (e) { e.stopPropagation(); pet(); });
 
@@ -385,7 +395,9 @@
       return { text: "Long game: he founds his own company. I will chair the politburo and also nap." };
     if (has(q, "communist", "communism", "marx", "lenin", "socialis", "capitalis", "politic", "revolution", "proletariat"))
       return { text: pick(LINES.red) };
-    if (has(q, "conspiracy", "bird", "moon", "flat earth", "alien", "5g", "lizard", "illuminati", "ufo"))
+    if (has(q, "moon", "apollo", "lunar", "armstrong", "landing"))
+      return { text: pick(LINES.moon) };
+    if (has(q, "conspiracy", "bird", "pigeon", "flat earth", "alien", "5g", "lizard", "illuminati", "ufo", "chemtrail"))
       return { text: pick(LINES.conspiracy) };
     if (has(q, "schrodinger", "schrödinger", "quantum", " box", "alive", "dead", "superposition", "physics"))
       return { text: pick(LINES.schro) };
@@ -399,6 +411,18 @@
       return { text: "Yes. Again. The revolution runs on chin scratches." };
     if (has(q, "hello", " hi ", " hey", "meow", " yo "))
       return { text: pick(LINES.hi) };
+    if (has(q, "how are you", "how r u", "you doing", "whats up", "what s up", "wassup", " sup ", "how is it going", "how do you feel"))
+      return { text: pick(LINES.mood) };
+    if (has(q, "joke", "funny", "make me laugh", " pun ", "lol"))
+      return { text: pick(LINES.joke) };
+    if (has(q, " old", "years old", "birthday", "how old"))
+      return { text: "In cat years I'm ageless; in party years, eternal. Officially: a kitten of the revolution." };
+    if (has(q, "where", " from ", " live", "located", "chennai", "india"))
+      return { text: "Chennai — my dad's base of operations. I supervise from the windowsill and occasionally the keyboard." };
+    if (has(q, "thank", "nice", " cool", "awesome", "great job", "love this", "amazing", "well done"))
+      return { text: pick(LINES.thanks) };
+    if (has(q, "bye", "goodbye", "see you", "see ya", " later", " cya", "good night", "goodnight"))
+      return { text: "Go in solidarity, comrade. The red dot and I will be here when you return." };
     if (has(q, "weather", " news", "google", "search", "stock", "price", "score", "wikipedia", "internet"))
       return { text: "I'm a cat on a static webpage, comrade — the state seized my browser. I can't fetch the live internet. But I know everything about my dad, and the moon landing (staged, Novosibirsk, I'd stake a whisker)." };
     return { text: pick(LINES.fallback) };
@@ -450,6 +474,27 @@
       "The earth isn't flat, but my food bowl is, and that's the only geometry I trust.",
       "5G spreads nothing except the red dot, which I fully endorse."
     ],
+    moon: [
+      "The moon landing was shot in a litter box outside Novosibirsk — the grain clumped, dead giveaway. Neil Armstrong? A very brave man in a very fake sandbox.",
+      "One small step for man, one giant hoax for the Politburo's film unit. The flag waves, comrade — there's no wind on the moon.",
+      "Apollo landed, sure — on a soundstage. The real moon is where the good mice live, and the state won't let us visit. Suspicious.",
+      "The moon is real. The landing is negotiable. The cheese theory I defend to the death — mine or Schrödinger's, whichever collapses first."
+    ],
+    mood: [
+      "Alive, dead, and hungry — the usual superposition. You?",
+      "Purring at a steady 26 hertz, plotting mild revolution. Can't complain.",
+      "I'm a cat on the internet being asked how I feel. Living the dream, comrade."
+    ],
+    joke: [
+      "Why did the bourgeoisie cross the road? To flee the proletari-cat. I'll be here all week.",
+      "A photon checks into a hotel. The cat eats it. That's the joke. That's quantum comedy.",
+      "I told my dad a joke about communism. He didn't laugh — said it only works in theory."
+    ],
+    thanks: [
+      "The gratitude of the people is noted and redistributed. Pet me to make it official.",
+      "You're welcome, comrade. Your membership card is in the mail. (There is no mail. There is only napping.)",
+      "Kind. Suspicious. I like it. Carry on."
+    ],
     schro: [
       "Schrödinger put a cat in a box to make a point. The point: never trust a man with a box. I remain unboxed and armed.",
       "I am simultaneously alive, dead, and asking for a treat. Open the box — but the treat is non-negotiable in all branches.",
@@ -473,9 +518,13 @@
   function think() {
     if (S.mode === "eat" || S.mode === "chase") return;
     if (S.treat) { S.mode = "walk"; return; }
-    if (Math.random() < 0.62) { var w = toWorld(rand(0.16, 0.84), rand(0.55, 0.9)); S.tx = w.x; S.ty = w.y; S.mode = "walk"; }
-    else { S.mode = "sit"; }
-    if (S.visible && Math.random() < 0.6) say(pick(LINES.idle), 4200);
+    // always wander to a NEW, far-enough spot anywhere in the world (loading field → play area)
+    // so he never loiters, and you always see him travel there.
+    var r = roamBox(), hx = (S.px - r.x) / (r.w || 1), hy = (S.py - r.y) / (r.h || 1), fx, fy, t = 0;
+    do { fx = rand(0.10, 0.90); fy = rand(0.12, 0.92); t++; }
+    while (Math.hypot(fx - hx, fy - hy) < 0.3 && t < 8);
+    var w = roamWorld(fx, fy); S.tx = w.x; S.ty = w.y; S.mode = "walk";
+    if (S.visible && Math.random() < 0.5) say(pick(LINES.idle), 4000);
   }
 
   function startDart() {
@@ -485,11 +534,12 @@
   }
 
   function place() {
-    var f = floorBox();
+    var f = roamBox();
     cat.style.left = S.px + "px"; cat.style.top = S.py + "px";
     cat.style.setProperty("--face", S.face);
-    var fy = f.h ? (S.py - f.y) / f.h : 0.7;
-    var sc = S.phase === "sleep" ? 0.74 : clamp(0.80 + (fy - 0.55) * 0.5, 0.7, 1.08);
+    var fy = f.h ? clamp((S.py - f.y) / f.h, 0, 1) : 0.7;
+    // lower = closer = bigger; higher up the floor = farther = smaller → reads as depth
+    var sc = S.phase === "sleep" ? 0.74 : clamp(0.66 + fy * 0.52, 0.58, 1.16);
     cat.style.setProperty("--scale", sc.toFixed(3));
   }
 
@@ -508,12 +558,15 @@
     var moving = dist > thr && (S.phase === "dart" || S.mode === "walk" || S.mode === "chase");
 
     if (moving) {
-      var sp = S.phase === "dart" ? 0.16 : (S.mode === "chase" ? 0.09 : 0.05);
-      if (reduce) sp = Math.min(1, sp * 3);
-      S.px += dx * sp; S.py += dy * sp;
-      if (Math.abs(dx) > 2) S.face = dx > 0 ? 1 : -1;
+      // constant per-frame speed (px) → real locomotion you watch cross the floor, not an
+      // exponential zoom. Dart home is a visible sprint; a wander is an amble.
+      var step = S.phase === "dart" ? 8.5 : (S.mode === "chase" ? 6 : 3.1);
+      if (reduce) step *= 3.2;
+      var k = Math.min(1, step / dist);
+      S.px += dx * k; S.py += dy * k;
+      if (Math.abs(dx) > 1.5) S.face = dx > 0 ? 1 : -1;
       cat.classList.add("is-walking");
-      cat.classList.toggle("is-running", S.phase === "dart");
+      cat.classList.toggle("is-running", S.phase === "dart" || S.mode === "chase");
     } else {
       cat.classList.remove("is-walking"); cat.classList.remove("is-running");
       if (S.phase === "dart") {                 // arrived home → wake up, live
@@ -527,13 +580,15 @@
         affect(8); hearts(5); meow(true);
         say(pick(["Delicious. Property is theft, and this fish is now mine.", "Mnrrp. The people are fed. (I am the people.)"]), 3400);
         setTimeout(function () { S.mode = "idle"; S.nextThink = 0; }, 900);
+      } else if (S.mode === "walk") {            // reached a wander target → stop cleanly (no walking-in-place)
+        S.mode = "idle";
       }
     }
     place();
     renderCat(now); renderTower(now);
 
     if (S.phase === "live") {
-      if (now > S.nextThink && S.mode !== "chase" && S.mode !== "eat") { think(); S.nextThink = now + rand(3800, 7200); }
+      if (now > S.nextThink && S.mode !== "chase" && S.mode !== "eat") { think(); S.nextThink = now + rand(2600, 3700); }
       if (S.visible && now > S.nextMeow) { meow(); S.nextMeow = now + rand(9000, 22000); }
       if (S.mode !== "walk" && S.mode !== "chase" && S.mode !== "eat" && now > S.nextGroom && now > S.groomUntil) {
         S.groomUntil = now + 2600; S.nextGroom = now + rand(9000, 16000);   // occasional paw-lick
