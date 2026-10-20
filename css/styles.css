@@ -203,7 +203,7 @@ html.js .hero__fig img{ clip-path:inset(0 0 100% 0); }
 .work-card a:hover .work-card__media img{ transform:scale(1.06); filter:grayscale(1) contrast(1.08) brightness(.95); }
 .work-card__media::after{ content:""; position:absolute; inset:0; background:linear-gradient(transparent 52%, rgba(6,6,6,.6)); }
 .work-card__media--mark{ background:radial-gradient(120% 120% at 50% 32%, #1b1b1b, #060606); }
-.work-card__media--mark img{ object-fit:contain; padding:15%; filter:grayscale(1) brightness(1.2) contrast(1.1); mix-blend-mode:screen; }
+.work-card__media--mark img{ object-fit:contain; padding:4%; filter:grayscale(1) brightness(1.06) contrast(1.04); }
 .work-card__media--mark::after{ background:none; }
 .work-card__row{ display:flex; justify-content:space-between; align-items:baseline; gap:12px; padding:clamp(15px,1.7vw,20px) clamp(18px,2vw,26px) 0; }
 .work-card__no{ font-family:var(--mono); font-size:12px; letter-spacing:.1em; color:var(--muted); }

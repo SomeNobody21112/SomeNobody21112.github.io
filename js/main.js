@@ -124,7 +124,6 @@
      momentum, so every heading reliably slides as its top crosses the fold. */
   var sweepPending = [];
   G.utils.toArray(".sec-head__title, .about__h").forEach(function (el, i) {
-    if (el.closest(".work")) return;                   // skip the pinned gallery title
     el.style.setProperty("--amp", (i % 2 ? 1 : -1) * (matchMedia("(max-width:760px)").matches ? 16 : 34) + "vw");
     el.classList.add("is-sweep");
     sweepPending.push(el);
