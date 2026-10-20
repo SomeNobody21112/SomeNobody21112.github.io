@@ -108,23 +108,17 @@
       scrollTrigger: { trigger: el, start: "top 88%" } });
   });
 
-  /* section-head titles: masked wipe-up (Obys-style) + bold horizontal scroll-drift */
+  /* section-head titles: bold horizontal slide-in, settling at natural spot.
+     No vertical wipe/mask — that was causing the "bob" and clipping descenders (g, y). */
   G.utils.toArray(".sec-head__title, .about__h").forEach(function (el, i) {
-    var mask = document.createElement("div"); mask.className = "mask-line";
-    el.parentNode.insertBefore(mask, el); mask.appendChild(el);
-    G.set(el, { yPercent: 116 });
-    G.to(el, { yPercent: 0, duration: 1.15, ease: "power4.out",
-      scrollTrigger: { trigger: mask, start: "top 90%" } });
-    // bold sweep: alternate side per heading, scrubbed across its time on screen.
-    // translate the mask wrapper (section clips it at the viewport edge; transforms don't reflow).
-    if (mask.closest(".work")) return;                 // skip the pinned gallery title
-    mask.classList.add("mask-line--sweep");
+    if (el.closest(".work")) return;                   // skip the pinned gallery title
+    el.classList.add("is-sweep");
     var dir = i % 2 ? 1 : -1;
     function amp() { return (matchMedia("(max-width:760px)").matches ? 14 : 30) * dir; }
-    G.fromTo(mask,
+    G.fromTo(el,
       { x: function () { return amp() + "vw"; } },
-      { x: function () { return (-amp()) + "vw"; }, ease: "none",
-        scrollTrigger: { trigger: mask, start: "top bottom", end: "bottom top", scrub: 1, invalidateOnRefresh: true } });
+      { x: 0, ease: "none",
+        scrollTrigger: { trigger: el, start: "top bottom", end: "top 42%", scrub: 1, invalidateOnRefresh: true } });
   });
   G.utils.toArray(".contact__big .w").forEach(function (el) {
     G.from(el, { yPercent: 118, duration: 1.1, ease: "power4.out",
@@ -316,7 +310,19 @@
         if (pre) { var m = Object.keys(commands).filter(function (k) { return k.indexOf(pre) === 0; }); if (m.length === 1) input.value = m[0] + " "; }
       }
     });
-    if (cli) cli.addEventListener("click", function (e) { if (e.target.tagName !== "A") input.focus(); });
+    // terminal captures scroll ONLY after you click into it; click outside / Esc releases it.
+    if (cli) {
+      cli.addEventListener("click", function (e) {
+        if (e.target.tagName !== "A") input.focus();
+        screen.setAttribute("data-lenis-prevent", ""); cli.classList.add("cli--active");
+      });
+      document.addEventListener("click", function (e) {
+        if (!cli.contains(e.target)) { screen.removeAttribute("data-lenis-prevent"); cli.classList.remove("cli--active"); }
+      });
+      document.addEventListener("keydown", function (e) {
+        if (e.key === "Escape") { screen.removeAttribute("data-lenis-prevent"); cli.classList.remove("cli--active"); input.blur(); }
+      });
+    }
 
     out('<span class="mut"># srd.sh — interactive shell. type </span><span class="cmd">help</span><span class="mut"> to begin.</span>');
   }
