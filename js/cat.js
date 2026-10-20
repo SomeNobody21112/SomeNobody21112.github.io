@@ -36,7 +36,7 @@
     mode: "idle",            // idle | walk | eat | chase | sit
     affection: 18, visible: false, reached: false, audio: false,
     treat: null, laser: null, nextThink: 0, nextMeow: 0,
-    groomUntil: 0, nextGroom: 4000
+    groomUntil: 0, nextGroom: 4000, atEnd: false
   };
 
   function clamp(v, a, b) { return v < a ? a : v > b ? b : v; }
@@ -518,12 +518,19 @@
   function think() {
     if (S.mode === "eat" || S.mode === "chase") return;
     if (S.treat) { S.mode = "walk"; return; }
-    // always wander to a NEW, far-enough spot anywhere in the world (loading field → play area)
-    // so he never loiters, and you always see him travel there.
-    var r = roamBox(), hx = (S.px - r.x) / (r.w || 1), hy = (S.py - r.y) / (r.h || 1), fx, fy, t = 0;
-    do { fx = rand(0.10, 0.90); fy = rand(0.12, 0.92); t++; }
-    while (Math.hypot(fx - hx, fy - hy) < 0.3 && t < 8);
-    var w = roamWorld(fx, fy); S.tx = w.x; S.ty = w.y; S.mode = "walk";
+    // always wander to a NEW, far-enough spot so he never loiters, and you see him travel.
+    // Before you reach the end he roams the whole world (plays up in the loading field);
+    // once you've scrolled to the end he stays in his 3D place and roams only inside it.
+    var b, fx, fy, t = 0, hx, hy;
+    if (S.atEnd) { var f = floorBox(); b = f; hx = (S.px - f.x) / (f.w || 1); hy = (S.py - f.y) / (f.h || 1); }
+    else { b = roamBox(); hx = (S.px - b.x) / (b.w || 1); hy = (S.py - b.y) / (b.h || 1); }
+    do {
+      if (S.atEnd) { fx = rand(0.14, 0.86); fy = rand(0.48, 0.92); }   // inside the floor only
+      else { fx = rand(0.10, 0.90); fy = rand(0.12, 0.92); }           // the whole world
+      t++;
+    } while (Math.hypot(fx - hx, fy - hy) < 0.28 && t < 8);
+    var w = { x: b.x + fx * b.w, y: b.y + fy * b.h };
+    S.tx = w.x; S.ty = w.y; S.mode = "walk";
     if (S.visible && Math.random() < 0.5) say(pick(LINES.idle), 4000);
   }
 
@@ -603,11 +610,15 @@
       es.forEach(function (e) {
         S.visible = e.isIntersecting && e.intersectionRatio > 0.2;
         if (S.visible && S.phase === "sleep") startDart();
+        if (!S.atEnd && e.intersectionRatio >= 0.55) {   // scrolled to the end → settle into his 3D place
+          S.atEnd = true;
+          if (S.phase === "live") { var h = housePos(); S.tx = h.x; S.ty = h.y; S.mode = "walk"; }
+        }
       });
-    }, { threshold: [0, 0.2, 0.5] }).observe(stage);
+    }, { threshold: [0, 0.2, 0.55, 0.8] }).observe(stage);
   } else {
     // reduced motion / no IO: skip the choreography, just put him home awake
-    var hp = housePos(); S.px = hp.x; S.py = hp.y; S.phase = "live"; S.reached = true; S.visible = true;
+    var hp = housePos(); S.px = hp.x; S.py = hp.y; S.phase = "live"; S.reached = true; S.visible = true; S.atEnd = true;
     cat.classList.remove("is-sleeping");
   }
 
