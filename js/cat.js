@@ -143,23 +143,23 @@
     pLeg(c, 36, 26, 0.03, 0.12, C_MID); pLeg(c, 39, 26, 0.0, 0.1, C_MID); // front legs straight down
     pHead(c, 46, 16, now, "sit");
   }
-  function catMode(now) {
-    if (S.phase === "sleep") return "sleep";
-    if (S.phase === "dart" || S.mode === "chase") return "run";
-    if (S.mode === "walk") return "walk";
-    if (now < S.groomUntil) return "groom";
-    return "sit";
-  }
+  /* ===== CC0 sprite: Shepardskin "Cat Sprites" (OpenGameArt, public domain) =====
+     Real walk (6 frames @200ms) + run (6 frames @100ms) baked to assets/cat_sprites.png,
+     cell 20x17, row 0 = walk / row 1 = run, drawn facing right (CSS scaleX flips him for
+     leftward travel). Asset has no sit/sleep pose, so idle freezes on a standing frame. */
   var catCv = document.getElementById("catCanvas"), catCx = catCv ? catCv.getContext("2d") : null;
-  var cOff = document.createElement("canvas"); cOff.width = 64; cOff.height = 40;
-  var cO = cOff.getContext("2d");
+  var CW = 20, CH = 17, SHEET = new Image(), sheetOK = false;
+  SHEET.onload = function () { sheetOK = true; };
+  SHEET.src = "assets/cat_sprites.png";
   function renderCat(now) {
-    if (!catCx) return;
-    cO.clearRect(0, 0, 64, 40);
-    drawPuppet(cO, catMode(now), now);
+    if (!catCx || !sheetOK) return;
+    var running = S.phase === "dart" || S.mode === "chase";
+    var moving = running || S.mode === "walk";
+    var row = running ? 1 : 0, dur = running ? 100 : 200;
+    var fi = moving ? (Math.floor(now / dur) % 6) : 0;
     catCx.imageSmoothingEnabled = false;
     catCx.clearRect(0, 0, catCv.width, catCv.height);
-    catCx.drawImage(cOff, 0, 0, 64, 40, 0, 0, catCv.width, catCv.height);
+    catCx.drawImage(SHEET, fi * CW, row * CH, CW, CH, 0, 0, catCv.width, catCv.height);
   }
 
   /* ---- the cat tree (pixel, drawn low-res then scaled crisp) ---- */
