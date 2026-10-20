@@ -35,12 +35,160 @@
     phase: "sleep",          // sleep | dart | live
     mode: "idle",            // idle | walk | eat | chase | sit
     affection: 18, visible: false, reached: false, audio: false,
-    treat: null, laser: null, nextThink: 0, nextMeow: 0
+    treat: null, laser: null, nextThink: 0, nextMeow: 0,
+    groomUntil: 0, nextGroom: 4000
   };
 
   function clamp(v, a, b) { return v < a ? a : v > b ? b : v; }
   function rand(a, b) { return a + Math.random() * (b - a); }
   function pick(a) { return a[(Math.random() * a.length) | 0]; }
+
+  /* ================= procedural pixel puppet — shaded black cat ====================
+     Drawn facing RIGHT into a 64x40 offscreen buffer, then nearest-neighbour upscaled
+     x4 into #catCanvas (256x160) so it stays crisply pixelated while moving smoothly.
+     Forward-kinematic legs (real gait), breathing, blinking, tail sway, head bob,
+     swinging dangle paw for the draped sleep. CSS scaleX(var(--face)) flips him.      */
+  var TAU = 6.2832;
+  var C_MID = "#242424", C_LIT = "#454545", C_DRK = "#131313",   // shaded "black" fur
+      C_EYE = "#f4c518", C_PUP = "#1d1d0e", C_PINK = "#e58b86", C_WHISK = "rgba(216,210,198,.5)";
+
+  function pEll(c, cx, cy, rx, ry, col) {        // filled pixel ellipse
+    c.fillStyle = col;
+    var y0 = Math.floor(cy - ry), y1 = Math.ceil(cy + ry);
+    for (var y = y0; y <= y1; y++) {
+      var dy = (y + 0.5 - cy) / ry; if (dy < -1 || dy > 1) continue;
+      var hw = rx * Math.sqrt(1 - dy * dy), xa = Math.round(cx - hw), xb = Math.round(cx + hw);
+      c.fillRect(xa, y, Math.max(1, xb - xa), 1);
+    }
+  }
+  function pSeg(c, x0, y0, x1, y1, w, col) {      // thick pixel line (square brush)
+    c.fillStyle = col;
+    var dx = x1 - x0, dy = y1 - y0, n = Math.ceil(Math.max(1, Math.hypot(dx, dy))), o = (w - 1) / 2;
+    for (var i = 0; i <= n; i++) { var t = i / n; c.fillRect(Math.round(x0 + dx * t - o), Math.round(y0 + dy * t - o), w, w); }
+  }
+  function pRect(c, x, y, w, h, col) { c.fillStyle = col; c.fillRect(Math.round(x), Math.round(y), w, h); }
+  function pBlob(c, cx, cy, rx, ry) {             // rounded form with top sheen + belly shadow
+    pEll(c, cx, cy, rx, ry, C_MID);
+    pEll(c, cx, cy + ry * 0.45, rx * 0.82, ry * 0.52, C_DRK);
+    pEll(c, cx, cy - ry * 0.42, rx * 0.66, ry * 0.40, C_LIT);
+  }
+  function pEar(c, tipX, tipY, baseY, w, col) {
+    c.fillStyle = col;
+    for (var y = tipY; y <= baseY; y++) { var f = (y - tipY) / Math.max(1, baseY - tipY), hw = Math.round(f * w); c.fillRect(tipX - hw, y, 2 * hw + 1, 1); }
+  }
+  function pLeg(c, hx, hy, th, kb, col) {          // hip->knee->foot, 2-bone FK
+    var tl = 4.6, sl = 5, kx = hx + Math.sin(th) * tl, ky = hy + Math.cos(th) * tl,
+        fa = th - kb, fx = kx + Math.sin(fa) * sl, fy = ky + Math.cos(fa) * sl;
+    pSeg(c, hx, hy, kx, ky, 3, col);
+    pSeg(c, kx, ky, fx, fy, 2, col);
+    pRect(c, fx - 1, fy - 1, 3, 2, col);           // paw
+    return fy;
+  }
+  function pGait(c, hx, hy, amp, spd, ph, now, col) {
+    var cyc = ((now * spd) + ph) % 1, s = Math.sin(cyc * TAU),
+        th = amp * s, lift = Math.max(0, s), kb = 0.3 + 0.75 * lift;
+    pLeg(c, hx, hy, th, kb, col);
+  }
+  function pHead(c, hx, hy, now, mode) {
+    pEar(c, hx - 5, hy - 9, hy - 2, 3, C_MID); pEar(c, hx + 5, hy - 9, hy - 2, 3, C_MID);
+    pEar(c, hx - 5, hy - 7, hy - 3, 1, C_PINK); pEar(c, hx + 5, hy - 7, hy - 3, 1, C_PINK);
+    pBlob(c, hx, hy, 8, 7.2);
+    var blink = (now % 3400) < 140;
+    if (mode === "sleep" || blink) { pRect(c, hx + 1, hy - 1, 4, 1, C_DRK); }  // closed eye
+    else { pEll(c, hx + 3, hy - 1, 2, 2.4, C_EYE); pRect(c, hx + 3, hy - 1, 1, 2, C_PUP); }
+    pRect(c, hx + 7, hy + 2, 2, 1, C_PINK);        // nose
+    pSeg(c, hx + 7, hy + 3, hx + 13, hy + 1, 1, C_WHISK);   // whiskers
+    pSeg(c, hx + 7, hy + 4, hx + 13, hy + 5, 1, C_WHISK);
+  }
+  function pTail(c, rx, ry, now, curl) {
+    var N = 9, px = rx, py = ry;
+    for (var i = 1; i <= N; i++) {
+      var a = i / N, tx = rx - 11 * a + Math.sin(now / 300 + a * 2.6) * 2.4 * a,
+          ty = ry - 14 * a * a * curl - a, w = Math.max(1, Math.round(3 * (1 - a) + 1));
+      pSeg(c, px, py, tx, ty, w, C_MID); px = tx; py = ty;
+    }
+  }
+  function drawPuppet(c, mode, now) {
+    if (mode === "walk" || mode === "run") {
+      var spd = mode === "run" ? 0.0052 : 0.0027, amp = mode === "run" ? 0.85 : 0.55,
+          bob = 0.7 * (0.5 + 0.5 * Math.sin(now * spd * 2 * TAU)),
+          bcy = 22 - bob, hcy = 16 - 0.6 * (0.5 + 0.5 * Math.sin(now * spd * 2 * TAU + 0.7));
+      pTail(c, 16, 22, now, 0.6);
+      pGait(c, 18, 28, amp, spd, 0.5, now, C_DRK); pGait(c, 40, 28, amp, spd, 0.0, now, C_DRK);  // far legs
+      pBlob(c, 28, bcy, 13, 8);
+      pGait(c, 21, 28, amp, spd, 0.68, now, C_MID); pGait(c, 37, 28, amp, spd, 0.18, now, C_MID); // near legs
+      pHead(c, 47, hcy, now, mode);
+      return;
+    }
+    if (mode === "sleep") {                        // draped over the box edge
+      var br = 7 + 0.6 * Math.sin(now / 900), sw = Math.sin(now / 520) * 2.4;
+      pTail(c, 17, 15, now, 0.18);
+      pRect(c, 21, 19, 4, 2, C_DRK);               // tucked back paw
+      pBlob(c, 30, 15, 15, br);                    // lying body (breathes)
+      pSeg(c, 41, 19, 41 + sw, 31, 3, C_MID); pRect(c, 41 + sw - 1, 31, 3, 2, C_MID); // dangling swinging paw
+      pHead(c, 46, 24, now, "sleep");              // head drooping over the edge
+      return;
+    }
+    // sit / groom — upright, haunches down, tail curled
+    pTail(c, 16, 25, now, 1.2);
+    pEll(c, 20, 29, 8, 6, C_DRK);                  // back haunch
+    pBlob(c, 29, 24, 12, 10);
+    if (mode === "groom") {
+      pLeg(c, 36, 26, 0.02, 0.12, C_MID);          // one front paw planted
+      pSeg(c, 38, 27, 43, 20, 3, C_MID); pRect(c, 42, 18, 3, 2, C_MID);  // the other raised to the mouth
+      pHead(c, 45, 21, now, "groom");              // head dipped to lick
+      if (Math.floor(now / 240) % 2) pRect(c, 50, 24, 2, 2, C_PINK);     // tongue flick
+      return;
+    }
+    pLeg(c, 36, 26, 0.03, 0.12, C_MID); pLeg(c, 39, 26, 0.0, 0.1, C_MID); // front legs straight down
+    pHead(c, 46, 16, now, "sit");
+  }
+  function catMode(now) {
+    if (S.phase === "sleep") return "sleep";
+    if (S.phase === "dart" || S.mode === "chase") return "run";
+    if (S.mode === "walk") return "walk";
+    if (now < S.groomUntil) return "groom";
+    return "sit";
+  }
+  var catCv = document.getElementById("catCanvas"), catCx = catCv ? catCv.getContext("2d") : null;
+  var cOff = document.createElement("canvas"); cOff.width = 64; cOff.height = 40;
+  var cO = cOff.getContext("2d");
+  function renderCat(now) {
+    if (!catCx) return;
+    cO.clearRect(0, 0, 64, 40);
+    drawPuppet(cO, catMode(now), now);
+    catCx.imageSmoothingEnabled = false;
+    catCx.clearRect(0, 0, catCv.width, catCv.height);
+    catCx.drawImage(cOff, 0, 0, 64, 40, 0, 0, catCv.width, catCv.height);
+  }
+
+  /* ---- the cat tree (pixel, drawn low-res then scaled crisp) ---- */
+  var towerCv = document.getElementById("catTowerCv"), towerCx = towerCv ? towerCv.getContext("2d") : null;
+  var tOff = document.createElement("canvas"); tOff.width = 40; tOff.height = 68; var tO = tOff.getContext("2d");
+  function tR(x, y, w, h, c) { tO.fillStyle = c; tO.fillRect(x, y, w, h); }
+  function drawTowerPixels(now) {
+    tO.clearRect(0, 0, 40, 68);
+    var WOOD = "#c8a977", WD2 = "#a9875f", SIS = "#dac9a2", FR = "#2d2d2d", CU = "#b85b51", BALL = "#cf4a3c", DK = "#17120e";
+    tR(5, 63, 30, 4, WD2); tR(7, 61, 26, 3, WOOD);            // round base
+    tR(5, 26, 5, 36, FR); tR(6, 28, 3, 32, SIS);              // left scratching post (sisal)
+    tR(2, 24, 12, 3, WOOD);                                   // its top shelf
+    tR(18, 22, 5, 40, FR); tR(19, 44, 3, 16, SIS);            // central post
+    tR(9, 40, 20, 16, WD2); tR(10, 41, 18, 13, WOOD);        // condo pod
+    tO.fillStyle = DK; tO.beginPath(); tO.arc(16, 49, 4, 0, 6.2832); tO.fill(); // round entrance
+    tR(8, 36, 24, 4, WOOD); tR(12, 33, 14, 3, CU);            // mid platform + cushion
+    tR(22, 20, 14, 4, WOOD); tR(24, 18, 10, 2, CU);          // top perch + cushion
+    tO.strokeStyle = WOOD; tO.lineWidth = 2; tO.beginPath(); tO.arc(30, 9, 6, 0, 6.2832); tO.stroke(); // hoop toy
+    var bx = 30 + Math.round(Math.sin(now / 600) * 3);        // swinging ball on a string
+    tO.strokeStyle = "#6a6a6a"; tO.lineWidth = 1; tO.beginPath(); tO.moveTo(30, 15); tO.lineTo(bx, 21); tO.stroke();
+    tO.fillStyle = BALL; tO.beginPath(); tO.arc(bx, 23, 2.6, 0, 6.2832); tO.fill();
+  }
+  function renderTower(now) {
+    if (!towerCx) return;
+    drawTowerPixels(now);
+    towerCx.imageSmoothingEnabled = false;
+    towerCx.clearRect(0, 0, towerCv.width, towerCv.height);
+    towerCx.drawImage(tOff, 0, 0, 40, 68, 0, 0, towerCv.width, towerCv.height);
+  }
 
   // rect of an element relative to cat-world (difference cancels scroll)
   function wrect(el) {
@@ -333,7 +481,7 @@
     requestAnimationFrame(frame);
     var f = floorBox(); if (!f.w) return;
 
-    if (S.phase === "sleep") { var p = perchPos(); S.px = p.x; S.py = p.y; place(); return; }
+    if (S.phase === "sleep") { var p = perchPos(); S.px = p.x; S.py = p.y; place(); renderCat(now); renderTower(now); return; }
 
     if (S.phase === "dart") { var h = housePos(); S.tx = h.x; S.ty = h.y; }
     else if (S.mode === "chase" && S.laser) { var l = toWorld(S.laser.x, S.laser.y); S.tx = l.x; S.ty = l.y; }
@@ -366,10 +514,14 @@
       }
     }
     place();
+    renderCat(now); renderTower(now);
 
     if (S.phase === "live") {
       if (now > S.nextThink && S.mode !== "chase" && S.mode !== "eat") { think(); S.nextThink = now + rand(3800, 7200); }
       if (S.visible && now > S.nextMeow) { meow(); S.nextMeow = now + rand(9000, 22000); }
+      if (S.mode !== "walk" && S.mode !== "chase" && S.mode !== "eat" && now > S.nextGroom && now > S.groomUntil) {
+        S.groomUntil = now + 2600; S.nextGroom = now + rand(9000, 16000);   // occasional paw-lick
+      }
     }
   }
 

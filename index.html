@@ -385,34 +385,8 @@
       <p class="catyard__sub">Vladimir “Longcat” Pawtin — a communist black cat, allegedly both alive and dead. Pet him, feed him, point the laser, or ask him anything about me.</p>
 
       <div class="cat-floor" id="catStage">
-        <svg class="cat-house" viewBox="0 0 212 152" width="186" aria-hidden="true">
-          <defs>
-            <linearGradient id="hWall" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#c6ab85"/><stop offset="1" stop-color="#9b7e5a"/></linearGradient>
-            <linearGradient id="hSide" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#836848"/><stop offset="1" stop-color="#5c4733"/></linearGradient>
-            <linearGradient id="hRoof" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7d5f3c"/><stop offset="1" stop-color="#53402a"/></linearGradient>
-            <linearGradient id="hRoofS" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#5a4229"/><stop offset="1" stop-color="#3c2c1c"/></linearGradient>
-            <radialGradient id="hDoor" cx="50%" cy="32%" r="72%"><stop offset="0" stop-color="#2c2117"/><stop offset=".7" stop-color="#140f0a"/><stop offset="1" stop-color="#060402"/></radialGradient>
-            <linearGradient id="hCush" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#b85b51"/><stop offset="1" stop-color="#883a34"/></linearGradient>
-          </defs>
-          <ellipse cx="106" cy="145" rx="99" ry="11" fill="rgba(0,0,0,.16)"/>
-          <!-- receding right side -->
-          <path d="M150,143 L150,70 L196,86 L196,137 Z" fill="url(#hSide)"/>
-          <g stroke="rgba(0,0,0,.13)" stroke-width="1"><path d="M150,96 L196,110"/><path d="M150,118 L196,129"/></g>
-          <!-- front wall -->
-          <path d="M32,143 L32,70 L150,70 L150,143 Z" fill="url(#hWall)"/>
-          <g stroke="rgba(0,0,0,.09)" stroke-width="1.1"><path d="M32,90 L150,90"/><path d="M32,110 L150,110"/><path d="M32,130 L150,130"/></g>
-          <!-- side roof slope (depth) then front gable -->
-          <path d="M150,74 L91,30 L132,16 L198,56 Z" fill="url(#hRoofS)"/>
-          <path d="M22,74 L91,28 L160,74 Z" fill="url(#hRoof)"/>
-          <path d="M22,74 L160,74" stroke="rgba(0,0,0,.18)" stroke-width="2.4"/>
-          <!-- arched doorway with depth -->
-          <path d="M57,143 L57,106 A30,30 0 0 1 117,106 L117,143 Z" fill="url(#hDoor)"/>
-          <path d="M57,143 L57,106 A30,30 0 0 1 117,106 L117,143" fill="none" stroke="rgba(0,0,0,.22)" stroke-width="2.4"/>
-          <!-- cushion inside -->
-          <path d="M60,143 L60,134 Q87,124 114,134 L114,143 Z" fill="url(#hCush)"/>
-          <!-- little red star over the door -->
-          <path d="M87,42 l3,7.4 8.1,.4 -6.3,5.1 2.1,7.8 -6.9,-4.3 -6.9,4.3 2.1,-7.8 -6.3,-5.1 8.1,-.4 Z" fill="#b23a2e"/>
-        </svg>
+        <!-- pixel cat tree — scratching posts, condo pod, perch, hammock, swinging ball; drawn in js/cat.js -->
+        <canvas class="cat-tower" id="catTowerCv" width="184" height="312" aria-hidden="true"></canvas>
         <div class="cat-floor__affection"><span>Affection</span><div class="cat-floor__bar"><i id="catBar"></i></div></div>
       </div>
 
@@ -433,74 +407,7 @@
     <div class="cat is-sleeping" id="cat">
       <div class="cat__bubble" id="catBubble" role="status" aria-live="polite"></div>
       <div class="cat__art">
-        <svg class="cat-svg" viewBox="0 0 264 190" width="200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-          <defs>
-            <linearGradient id="furV" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4c4c4c"/><stop offset=".5" stop-color="#161616"/><stop offset="1" stop-color="#050505"/></linearGradient>
-            <radialGradient id="furHead" cx="38%" cy="30%" r="82%"><stop offset="0" stop-color="#565656"/><stop offset=".55" stop-color="#1c1c1c"/><stop offset="1" stop-color="#070707"/></radialGradient>
-            <radialGradient id="furHaunch" cx="40%" cy="32%" r="76%"><stop offset="0" stop-color="#444"/><stop offset="1" stop-color="#090909"/></radialGradient>
-            <radialGradient id="eyeG" cx="42%" cy="36%" r="70%"><stop offset="0" stop-color="#eaf7a6"/><stop offset=".45" stop-color="#9ad24d"/><stop offset="1" stop-color="#3c691f"/></radialGradient>
-            <linearGradient id="innerEar" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6e5751"/><stop offset="1" stop-color="#281e1d"/></linearGradient>
-          </defs>
-
-          <!-- ░ AWAKE / walking ░ -->
-          <g class="ct-awake">
-            <path class="ct-tail" fill="url(#furV)" d="M58,120 C22,112 8,72 26,42 C36,27 54,31 53,49 C42,72 51,101 73,109 Z"/>
-            <path class="ct-leg ct-leg--bb" d="M60,126 C68,124 74,128 73,136 L71,171 L59,171 L55,136 C54,129 53,128 60,126 Z" fill="#0b0b0b"/>
-            <ellipse cx="64" cy="172" rx="9" ry="4.5" fill="#0b0b0b"/>
-            <path class="ct-leg ct-leg--fb" d="M194,120 C202,118 208,122 207,130 L205,171 L193,171 L190,130 C189,123 188,122 194,120 Z" fill="#0b0b0b"/>
-            <ellipse cx="198" cy="172" rx="9" ry="4.5" fill="#0b0b0b"/>
-            <path d="M46,132 C42,98 72,80 108,86 C140,91 152,118 140,140 C122,151 72,151 56,141 C50,137 47,135 46,132 Z" fill="url(#furHaunch)"/>
-            <path class="ct-body" d="M92,92 C118,74 166,74 198,94 C216,106 214,126 188,136 C150,148 108,144 90,130 C76,118 78,102 92,92 Z" fill="url(#furV)"/>
-            <path class="ct-leg ct-leg--ba" d="M86,130 C94,128 100,132 99,140 L97,173 L83,173 L80,140 C79,132 78,132 86,130 Z" fill="url(#furV)"/>
-            <ellipse cx="90" cy="174" rx="10" ry="5" fill="#141414"/>
-            <g stroke="#000" stroke-width=".8" opacity=".45"><path d="M86,174 L86,169"/><path d="M90,174 L90,168"/><path d="M94,174 L94,169"/></g>
-            <path class="ct-leg ct-leg--fa" d="M172,120 C180,118 186,122 185,130 L184,173 L170,173 L167,130 C166,122 165,120 172,120 Z" fill="url(#furV)"/>
-            <ellipse cx="177" cy="174" rx="10" ry="5" fill="#141414"/>
-            <g stroke="#000" stroke-width=".8" opacity=".45"><path d="M173,174 L173,169"/><path d="M177,174 L177,168"/><path d="M181,174 L181,169"/></g>
-            <path d="M176,100 C184,80 206,76 216,92 L212,122 L178,126 Z" fill="url(#furV)"/>
-            <circle cx="206" cy="80" r="30" fill="url(#furHead)"/>
-            <path d="M224,82 C240,82 242,100 227,104 C219,106 216,90 224,82 Z" fill="url(#furHead)"/>
-            <path class="ct-ear ct-ear--a" d="M182,58 L185,20 L212,52 Z" fill="url(#furHead)"/>
-            <path class="ct-ear ct-ear--b" d="M209,54 L232,22 L237,60 Z" fill="url(#furHead)"/>
-            <path d="M189,52 L191,31 L205,49 Z" fill="url(#innerEar)"/>
-            <path d="M214,51 L227,30 L231,57 Z" fill="url(#innerEar)"/>
-            <g stroke="rgba(230,230,230,.5)" stroke-width="1" stroke-linecap="round"><path d="M186,30 l-3,-7"/><path d="M190,28 l-1,-7"/><path d="M232,30 l3,-7"/></g>
-            <ellipse cx="210" cy="80" rx="11" ry="8.5" fill="#090909"/>
-            <path class="ct-eye" d="M200,80 Q210,70 220,80 Q210,89 200,80 Z" fill="url(#eyeG)"/>
-            <ellipse cx="210" cy="80" rx="2.8" ry="8" fill="#080808"/>
-            <circle cx="206.5" cy="76.5" r="1.8" fill="#fff" opacity=".9"/>
-            <path d="M200,80 Q210,88 220,80" stroke="rgba(0,0,0,.4)" stroke-width="1.4" fill="none"/>
-            <ellipse class="ct-lid" cx="210" cy="80" rx="11.5" ry="9" fill="url(#furHead)"/>
-            <path d="M226,92 l7,1.5 l-3.5,5.5 Z" fill="#caa29a" stroke="#1a1010" stroke-width=".6"/>
-            <path d="M229.5,99 L229.5,103" stroke="#070707" stroke-width="1.1"/>
-            <path d="M229.5,103 q-5,4 -11,3 M229.5,103 q3,3 8,2" stroke="#070707" stroke-width="1.1" fill="none" stroke-linecap="round"/>
-            <g stroke="rgba(240,240,240,.55)" stroke-width="1" fill="none" stroke-linecap="round"><path d="M198,68 C203,63 209,61 214,62"/><path d="M198,71 C203,67 209,66 213,66"/></g>
-            <g stroke="rgba(245,245,245,.62)" stroke-width="1.1" fill="none" stroke-linecap="round"><path d="M231,94 C246,91 255,89 263,87"/><path d="M231,98 C246,98 255,100 263,102"/><path d="M230,101 C243,105 251,109 258,113"/></g>
-            <g stroke="rgba(150,150,150,.16)" stroke-width="1" fill="none" stroke-linecap="round"><path d="M74,106 q8,8 6,22"/><path d="M96,100 q6,10 2,24"/><path d="M120,98 q4,10 -1,22"/><path d="M186,104 q5,8 2,20"/></g>
-            <path d="M92,92 C118,74 166,74 198,94" stroke="rgba(150,150,150,.4)" stroke-width="2" fill="none" stroke-linecap="round"/>
-          </g>
-
-          <!-- ░ SLEEPING / curled, one front paw dangling ░ -->
-          <g class="ct-sleep">
-            <path d="M46,142 C40,104 86,84 130,84 C180,84 212,104 212,140 C212,160 172,168 122,168 C72,168 46,160 46,142 Z" fill="url(#furV)"/>
-            <path d="M60,96 C96,82 164,82 200,100" stroke="rgba(150,150,150,.33)" stroke-width="2" fill="none" stroke-linecap="round"/>
-            <path class="ct-sleeptail" d="M60,156 C24,164 10,136 22,108 C29,95 42,98 42,112 C39,132 58,148 82,142 Z" fill="url(#furV)"/>
-            <g class="ct-dangle">
-              <path d="M150,146 C157,144 163,147 162,154 L160,184 L148,184 L146,154 C145,148 144,147 150,146 Z" fill="#0b0b0b"/>
-              <ellipse cx="155" cy="185" rx="9" ry="4" fill="#0b0b0b"/>
-            </g>
-            <circle cx="188" cy="128" r="30" fill="url(#furHead)"/>
-            <path d="M206,132 C219,132 221,148 208,151 C201,153 199,138 206,132 Z" fill="url(#furHead)"/>
-            <path class="ct-ear" d="M166,112 L172,78 L194,108 Z" fill="url(#furHead)"/>
-            <path d="M194,108 L214,80 L220,114 Z" fill="url(#furHead)"/>
-            <path d="M172,104 L175,84 L188,104 Z" fill="url(#innerEar)"/>
-            <path d="M172,128 q9,7 18,0" stroke="#0b0b0b" stroke-width="2.4" fill="none" stroke-linecap="round"/>
-            <path d="M190,127 l5,-2 M190,130 l5,0" stroke="#0b0b0b" stroke-width="1" stroke-linecap="round"/>
-            <path d="M210,140 l6,1.3 l-3,5 Z" fill="#caa29a" stroke="#1a1010" stroke-width=".5"/>
-            <g stroke="rgba(245,245,245,.5)" stroke-width="1" fill="none" stroke-linecap="round"><path d="M214,142 C228,143 236,146 244,150"/><path d="M214,145 C227,148 234,152 240,157"/></g>
-            <g stroke="rgba(150,150,150,.14)" stroke-width="1" fill="none"><path d="M80,110 q6,14 2,30"/><path d="M120,102 q4,16 0,34"/><path d="M160,108 q4,14 0,28"/></g>
-          </g>
-        </svg>
+        <canvas class="cat-canvas" id="catCanvas" width="256" height="160" aria-hidden="true"></canvas>
       </div>
       <div class="cat__shadow"></div>
     </div>
