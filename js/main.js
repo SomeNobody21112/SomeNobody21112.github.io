@@ -85,18 +85,18 @@
   function statusFor(v) { var s = STATUS[0][1]; for (var i = 0; i < STATUS.length; i++) if (v >= STATUS[i][0]) s = STATUS[i][1]; return s; }
 
   var tl = G.timeline();
-  tl.to(counter, { v: 100, duration: 3.8, ease: "power1.inOut",
+  tl.to(counter, { v: 100, duration: 1.7, ease: "power1.inOut",
       onUpdate: function () {
         var v = Math.round(counter.v);
         if (numEl) numEl.textContent = String(v).padStart(3, "0");
         if (statusEl) { var s = statusFor(v); if (s !== lastStatus) { statusEl.textContent = s; lastStatus = s; } }
       } }, 0)
-    .to(fillEl, { width: "100%", duration: 3.8, ease: "power1.inOut" }, 0)
-    .to(".loader__img", { clipPath: "inset(0% 0 0 0)", duration: 1.8, ease: "power3.out" }, 0.6)
+    .to(fillEl, { width: "100%", duration: 1.7, ease: "power1.inOut" }, 0)
+    .to(".loader__img", { clipPath: "inset(0% 0 0 0)", duration: 1.1, ease: "power3.out" }, 0.3)
     .to(".loader__meta, .loader__bar, .loader__count, .loader__frame",
-        { opacity: 0, duration: 0.5, ease: "power2.in" }, 4.0)
-    .to(loader, { yPercent: -100, duration: 0.9, ease: "power4.inOut" }, 4.2)
-    .add(startHero, 4.45)
+        { opacity: 0, duration: 0.5, ease: "power2.in" }, 1.8)
+    .to(loader, { yPercent: -100, duration: 0.9, ease: "power4.inOut" }, 2.0)
+    .add(startHero, 2.2)
     .set(loader, { display: "none" });
 
   function startHero() {
