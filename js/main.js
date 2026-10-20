@@ -46,7 +46,7 @@
     initField();
     initWork();
     initAscii();
-    initAlgo();
+    initQuant();
     return;
   }
 
@@ -159,7 +159,7 @@
   initCursor();
   initWork();
   initAscii();
-  initAlgo();
+  initQuant();
   initObys();
 
   /* ================= code terminal typewriter ================= */
@@ -444,9 +444,9 @@
       if (!W || !H) return;
       cv.width = Math.floor(W * dpr); cv.height = Math.floor(H * dpr);
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      var cell = W < 420 ? 8 : 9.5;
-      cols = Math.max(28, Math.floor(W / cell));
-      rows = Math.max(28, Math.floor(H / (cell * 1.5)));
+      var cell = W < 420 ? 5.4 : 6.2;
+      cols = Math.max(36, Math.floor(W / cell));
+      rows = Math.max(44, Math.floor(H / (cell * 1.32)));
       cw = W / cols; ch = H / rows;
       ready = sample();
     }
@@ -461,14 +461,15 @@
       for (var y = 0; y < rows; y++) {
         for (var x = 0; x < cols; x++) {
           var v = lum((y * cols + x) * 4); if (lt) v = 1 - v;
+          v = Math.pow(v, 0.92); // gentle lift so shadowed face cells still read
           var cx = x * cw, cy = y * ch, near = 0;
           if (mouse.on) { var dx = cx - mouse.x, dy = cy - mouse.y, d = Math.sqrt(dx * dx + dy * dy); near = d < 160 ? 1 - d / 160 : 0; }
-          var shim = full ? 0 : 0.05 * Math.sin(x * 0.55 + y * 0.5 + frame * 0.05);
+          var shim = full ? 0 : 0.018 * Math.sin(x * 0.55 + y * 0.5 + frame * 0.05);
           var L = Math.min(1, Math.max(0, v + shim * (1 - near)));
           var idx = Math.round(L * (ramp.length - 1));
           if (near > 0) idx = Math.min(ramp.length - 1, idx + Math.round(near * 2.2));
           if (idx <= 0 && near <= 0) continue;
-          var a = 0.24 + 0.68 * L;
+          var a = 0.3 + 0.66 * L;
           if (near > 0) {
             a = Math.min(1, a + near * 0.5);
             var rr = Math.round(iR + (255 - iR) * near), gg = Math.round(iG + (40 - iG) * near * 0.9), bb = Math.round(iB + (52 - iB) * near * 0.9);
@@ -495,102 +496,103 @@
     var rt; addEventListener("resize", function () { clearTimeout(rt); rt = setTimeout(function () { size(); if (reduce || !running) render(true); }, 200); });
   }
 
-  /* ================= dual algorithm, drag to compare ================= */
-  function initAlgo() {
-    var stage = document.getElementById("algoStage"),
-        a = document.getElementById("algoA"), b = document.getElementById("algoB"),
-        reveal = document.getElementById("algoReveal"), divider = document.getElementById("algoDivider");
-    if (!stage || !a || !b || !reveal || !divider) return;
-    var ca = a.getContext("2d"), cb = b.getContext("2d");
-    var dpr = Math.min(2, window.devicePixelRatio || 1);
-    var W = 0, H = 0, split = 0.5;
 
-    function applySplit(s) {
-      split = Math.max(0.04, Math.min(0.96, s));
-      reveal.style.width = (split * 100) + "%";
-      divider.style.left = (split * 100) + "%";
-      divider.setAttribute("aria-valuenow", Math.round(split * 100));
-    }
+  /* ================= live quantization (float32 -> 2-bit, watch) ================= */
+  function initQuant() {
+    var stage = document.getElementById("quantStage"),
+        cv = document.getElementById("quantCv");
+    if (!stage || !cv || !cv.getContext) return;
+    var ctx = cv.getContext("2d");
+    var dpr = Math.min(2, window.devicePixelRatio || 1);
+    var W = 0, H = 0, C = 0, R = 0;
+    var RED = "rgba(255,40,52,";
+
     function size() {
       var r = stage.getBoundingClientRect(); W = r.width; H = r.height;
       if (!W || !H) return;
-      [a, b].forEach(function (cv) { cv.width = Math.floor(W * dpr); cv.height = Math.floor(H * dpr); });
-      ca.setTransform(dpr, 0, 0, dpr, 0, 0); cb.setTransform(dpr, 0, 0, dpr, 0, 0);
-      b.style.width = W + "px"; b.style.height = H + "px";
-      applySplit(split);
+      cv.width = Math.floor(W * dpr); cv.height = Math.floor(H * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      C = W < 560 ? 18 : 30;                 // weight columns
+      R = Math.max(9, Math.round(C * (H / W) * 0.92)); // keep cells ~square
     }
-    function pathState(i, seed, states) { var v = Math.sin((i + 1) * 12.9898 + seed * 78.233) * 43758.5453; return Math.floor((v - Math.floor(v)) * states); }
-    function pad2(n) { n = n.toString(2); return n.length < 2 ? "0" + n : n; }
 
-    function drawQuant(ctx, t) {
-      ctx.fillStyle = "#070707"; ctx.fillRect(0, 0, W, H);
-      var padX = W * 0.08, padY = H * 0.2, gw = W - padX * 2, gh = H - padY * 1.4;
-      var C = 16, R = 7, cwid = gw / C, chei = gh / R;
-      var active = Math.floor(t * 0.02) % R, frac = (t * 0.02) % 1;
-      ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.font = "600 " + Math.max(8, chei * 0.28).toFixed(0) + "px " + MONO;
-      for (var r = 0; r < R; r++) {
-        var quant = r < active || (r === active && frac > 0.5);
-        for (var c = 0; c < C; c++) {
-          var vx = padX + c * cwid, vy = padY + r * chei;
-          var val = 0.5 + 0.48 * Math.sin(c * 0.6 + r * 0.9 + t * 0.03 + Math.sin(c + t * 0.01));
-          var shade = quant ? Math.round(val * 3) / 3 : val, g = Math.round(26 + shade * 205);
-          ctx.fillStyle = "rgb(" + g + "," + g + "," + g + ")"; ctx.fillRect(vx + 1, vy + 1, cwid - 2, chei - 2);
-          if (quant) { ctx.fillStyle = "rgba(0,0,0,.5)"; ctx.fillText(pad2(Math.round(val * 3)), vx + cwid / 2, vy + chei / 2); }
-        }
-        if (r === active) { ctx.strokeStyle = "rgba(255,40,52,.95)"; ctx.lineWidth = 2; ctx.strokeRect(padX, padY + r * chei, gw, chei); }
-      }
-      ctx.fillStyle = "rgba(255,40,52,.95)"; ctx.textAlign = "left"; ctx.textBaseline = "alphabetic"; ctx.font = "600 11px " + MONO;
-      ctx.fillText("block " + (active + 1) + "/" + R + "  ·  scale " + (0.30 + 0.18 * Math.abs(Math.sin(t * 0.05))).toFixed(3), padX, padY - H * 0.05);
-      ctx.fillStyle = "rgba(236,233,227,.45)"; ctx.font = "500 11px " + MONO;
-      ctx.fillText("float32  →  2-bit · 4 levels", padX, H - padY * 0.45);
+    // smooth pseudo-random weight field in [0,1]
+    function field(c, r, t) {
+      return 0.5 + 0.5 * (
+        0.55 * Math.sin(c * 0.55 + r * 0.33 + t * 0.6) +
+        0.30 * Math.sin(c * 0.21 - r * 0.47 + t * 0.9 + 1.7) +
+        0.15 * Math.sin((c + r) * 0.4 - t * 0.5)
+      );
     }
-    function drawSignal(ctx, t) {
-      ctx.fillStyle = "#070707"; ctx.fillRect(0, 0, W, H);
-      ctx.strokeStyle = "rgba(236,233,227,.05)"; ctx.lineWidth = 1;
-      for (var gx = 0; gx < W; gx += 40) { ctx.beginPath(); ctx.moveTo(gx, 0); ctx.lineTo(gx, H); ctx.stroke(); }
-      var mid = H * 0.3, amp = H * 0.14;
-      ctx.strokeStyle = "rgba(236,233,227,.55)"; ctx.lineWidth = 1.4; ctx.beginPath();
-      for (var x = 0; x <= W; x += 2) { var ph = x * 0.05 + t * 0.08, s = Math.sin(ph) + 0.4 * Math.sin(ph * 2.3 + 1) + 0.18 * Math.sin(ph * 7 + t * 0.1), y = mid + s * amp * 0.5; x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y); }
-      ctx.stroke();
-      var wx = (t * 1.2) % W;
-      ctx.fillStyle = "rgba(255,40,52,.1)"; ctx.fillRect(wx - 14, mid - amp, 28, amp * 2);
-      ctx.strokeStyle = "rgba(255,40,52,.9)"; ctx.lineWidth = 1.5; ctx.strokeRect(wx - 14, mid - amp, 28, amp * 2);
-      var ty = H * 0.52, th = H * 0.32, C2 = 14, states = 4, cwid = W / (C2 + 1);
-      for (var ci = 0; ci <= C2; ci++) for (var si = 0; si < states; si++) {
-        var nx = cwid * (ci + 0.5), ny = ty + (si / (states - 1)) * th;
-        if (ci < C2) for (var sj = 0; sj < states; sj++) { ctx.strokeStyle = "rgba(236,233,227,.07)"; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(nx, ny); ctx.lineTo(cwid * (ci + 1.5), ty + (sj / (states - 1)) * th); ctx.stroke(); }
-        ctx.fillStyle = "rgba(236,233,227,.33)"; ctx.beginPath(); ctx.arc(nx, ny, 2.3, 0, 6.2832); ctx.fill();
+    function pad2(n) { n = (n & 3).toString(2); return n.length < 2 ? "0" + n : n; }
+
+    function draw(t) {
+      var padX = Math.max(18, W * 0.055), padTop = H * 0.16, padBot = H * 0.14;
+      var gw = W - padX * 2, gh = H - padTop - padBot;
+      var cwid = gw / C, chei = gh / R;
+      // quantization front sweeps top->bottom, wraps; fractional edge row is mid-collapse
+      var period = R + 4, pos = (t * 0.9) % period, scale = 0.26 + 0.14 * Math.abs(Math.sin(t * 0.35));
+
+      ctx.fillStyle = "#060606"; ctx.fillRect(0, 0, W, H);
+      ctx.textAlign = "center"; ctx.textBaseline = "middle";
+      var lf = "600 " + Math.max(7, Math.min(13, chei * 0.3)).toFixed(0) + "px " + MONO;
+
+      for (var r = 0; r < R; r++) {
+        var edge = pos - r;                 // >1 fully quantized, 0..1 collapsing, <0 still float
+        var q = edge >= 1 ? 1 : (edge <= 0 ? 0 : edge); // collapse amount for this row
+        var vy = padTop + r * chei;
+        for (var c = 0; c < C; c++) {
+          var vx = padX + c * cwid;
+          var v = field(c, r, t);
+          var level = Math.round(v * 3);            // 0..3  (2-bit)
+          var qv = level / 3;                        // snapped value
+          var shade = v + (qv - v) * q;              // lerp float -> snapped
+          var g = Math.round(20 + shade * 214);
+          ctx.fillStyle = "rgb(" + g + "," + g + "," + g + ")";
+          var gap = q > 0.5 ? 1.4 : 0.4;             // crisp blocks once quantized
+          ctx.fillRect(vx + gap, vy + gap, cwid - gap * 2, chei - gap * 2);
+          if (q >= 1) {
+            ctx.fillStyle = (g > 140 ? "rgba(6,6,6,.55)" : "rgba(236,233,227,.4)");
+            ctx.font = lf; ctx.fillText(pad2(level), vx + cwid / 2, vy + chei / 2);
+          }
+        }
       }
-      var prog = (t * 0.12) % (C2 + 2), seed = Math.floor(t * 0.12 / (C2 + 2));
-      ctx.strokeStyle = "rgba(255,40,52,.95)"; ctx.lineWidth = 2; ctx.beginPath();
-      var lim = Math.min(C2, prog);
-      for (var pi = 0; pi <= lim; pi++) { var st = pathState(pi, seed, states), pxp = cwid * (pi + 0.5), pyp = ty + (st / (states - 1)) * th; pi === 0 ? ctx.moveTo(pxp, pyp) : ctx.lineTo(pxp, pyp); }
-      ctx.stroke();
-      var bits = ""; for (var bi = 0; bi < lim; bi++) bits += (pathState(bi, seed, states) % 2);
-      ctx.fillStyle = "rgba(236,233,227,.9)"; ctx.textAlign = "left"; ctx.textBaseline = "alphabetic"; ctx.font = "600 13px " + MONO;
-      ctx.fillText("decoded ▸ " + bits, cwid * 0.5, H - H * 0.05);
-      ctx.fillStyle = "rgba(236,233,227,.45)"; ctx.font = "500 11px " + MONO;
-      ctx.fillText("noisy RF  →  Viterbi survivor  →  bits", cwid * 0.5, ty - 12);
+      // red scan line at the collapsing front
+      if (pos >= 0 && pos < R + 1) {
+        var fy = padTop + Math.min(R, pos) * chei;
+        ctx.strokeStyle = RED + ".92)"; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(padX, fy); ctx.lineTo(padX + gw, fy); ctx.stroke();
+        ctx.fillStyle = RED + ".08)"; ctx.fillRect(padX, fy, gw, Math.min(chei * 1.1, gh));
+      }
+      // top readout
+      ctx.textAlign = "left"; ctx.textBaseline = "alphabetic";
+      ctx.fillStyle = RED + ".95)"; ctx.font = "600 11px " + MONO;
+      var done = Math.max(0, Math.min(R, Math.floor(pos)));
+      ctx.fillText("quantizing  row " + done + "/" + R + "   ·   block scale " + scale.toFixed(3), padX, padTop - H * 0.055);
+      // legend: four levels
+      ctx.fillStyle = "rgba(236,233,227,.4)"; ctx.font = "500 11px " + MONO;
+      ctx.fillText("float32", padX, H - padBot * 0.42);
+      var lab = ["00", "01", "10", "11"], lx = padX + gw - 4 * 26;
+      for (var k = 0; k < 4; k++) {
+        var lg = Math.round(20 + (k / 3) * 214);
+        ctx.fillStyle = "rgb(" + lg + "," + lg + "," + lg + ")";
+        ctx.fillRect(lx + k * 26, H - padBot * 0.62, 18, 12);
+        ctx.fillStyle = "rgba(236,233,227,.5)"; ctx.font = "500 9px " + MONO;
+        ctx.fillText(lab[k], lx + k * 26 + 2, H - padBot * 0.18);
+        ctx.font = "500 11px " + MONO;
+      }
     }
 
     var raf = 0, running = false;
-    function loop(now) { if (!running) return; var t = now * 0.06; drawSignal(ca, t); drawQuant(cb, t); raf = requestAnimationFrame(loop); }
+    function loop(now) { if (!running) return; draw(now * 0.001 * 2.2); raf = requestAnimationFrame(loop); }
     function start() { if (!running) { running = true; raf = requestAnimationFrame(loop); } }
     function stop() { running = false; cancelAnimationFrame(raf); }
 
-    var dragging = false;
-    function setFromX(clientX) { var r = stage.getBoundingClientRect(); applySplit((clientX - r.left) / r.width); }
-    function down(e) { dragging = true; setFromX((e.touches ? e.touches[0] : e).clientX); if (e.cancelable) e.preventDefault(); }
-    function move(e) { if (!dragging) return; setFromX((e.touches ? e.touches[0] : e).clientX); if (e.touches && e.cancelable) e.preventDefault(); }
-    function up() { dragging = false; }
-    stage.addEventListener("mousedown", down); addEventListener("mousemove", move); addEventListener("mouseup", up);
-    stage.addEventListener("touchstart", down, { passive: false }); addEventListener("touchmove", move, { passive: false }); addEventListener("touchend", up);
-    divider.addEventListener("keydown", function (e) { if (e.key === "ArrowLeft") { applySplit(split - 0.04); e.preventDefault(); } else if (e.key === "ArrowRight") { applySplit(split + 0.04); e.preventDefault(); } });
-
     size();
-    if (reduce) { drawSignal(ca, 0); drawQuant(cb, 0); }
+    if (reduce) { draw(3.2); }              // one static mid-sweep frame
     else if ("IntersectionObserver" in window) { new IntersectionObserver(function (en) { en.forEach(function (e) { e.isIntersecting ? start() : stop(); }); }, { threshold: 0.05 }).observe(stage); }
     else start();
-    var rt2; addEventListener("resize", function () { clearTimeout(rt2); rt2 = setTimeout(function () { size(); if (reduce) { drawSignal(ca, 0); drawQuant(cb, 0); } }, 200); });
+    window.addEventListener("themechange", function () { if (!running) draw(3.2); });
+    var rt2; addEventListener("resize", function () { clearTimeout(rt2); rt2 = setTimeout(function () { size(); if (reduce) draw(3.2); }, 200); });
   }
 })();

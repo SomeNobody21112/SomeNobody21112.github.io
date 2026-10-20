@@ -248,23 +248,18 @@
     </div>
   </section>
 
-  <!-- ░░ DUAL ALGORITHM (drag to compare) ░░ -->
-  <section class="algo" id="algo" aria-label="Two systems, drag to compare">
+  <!-- ░░ LIVE QUANTIZATION (watch) ░░ -->
+  <section class="quant" id="quant" aria-label="Live weight quantization">
     <div class="wrap">
       <header class="sec-head">
-        <p class="sec-head__idx">— watch them run</p>
-        <h2 class="sec-head__title">Two systems,<br>one <em>drag.</em></h2>
+        <p class="sec-head__idx">— the merge, running</p>
+        <h2 class="sec-head__title">Float32, folding<br>to <em>two bits.</em></h2>
+        <p class="quant__p">The quantizer I shipped to <a href="https://github.com/ggml-org/llama.cpp/pull/30630" target="_blank" rel="noopener">llama.cpp</a>, made visible: a plane of 32-bit weights collapsing block by block onto just four levels — the whole trick behind <code>Q2_0</code>. A model gets roughly sixteen times lighter, and still speaks.</p>
       </header>
-      <div class="algo__stage" id="algoStage" data-reveal>
-        <canvas class="algo__cv" id="algoA"></canvas>
-        <div class="algo__reveal" id="algoReveal">
-          <canvas class="algo__cv" id="algoB"></canvas>
-        </div>
-        <div class="algo__divider" id="algoDivider" role="slider" aria-label="Reveal split between the two visualisations" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50" tabindex="0"><span class="algo__knob" aria-hidden="true">⇆</span></div>
-        <span class="algo__label algo__label--l">llama.cpp — Q2_0 quantize</span>
-        <span class="algo__label algo__label--r">ICHNOVA — blind signal decode</span>
+      <div class="quant__stage" id="quantStage" data-reveal>
+        <canvas class="quant__cv" id="quantCv" role="img" aria-label="Weights quantizing from float32 to 2-bit"></canvas>
       </div>
-      <p class="algo__hint" aria-hidden="true">drag the handle ←→ · left: weights snapping to 2-bit · right: a signal decoding itself</p>
+      <p class="quant__hint" aria-hidden="true">float32 · continuous → 2-bit · four levels { 00 01 10 11 } · one scale per block</p>
     </div>
   </section>
 
