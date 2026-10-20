@@ -519,7 +519,7 @@ a:focus-visible{ outline:2px solid var(--fg); outline-offset:4px; }
 .cat-ask__in::placeholder{ color:var(--muted); }
 .cat-ask__in:focus{ outline:none; border-color:var(--dim); }
 
-.cat-log{ margin-top:16px; max-height:200px; overflow-y:auto; display:flex; flex-direction:column; gap:10px; font-size:14px; line-height:1.5; }
+.cat-log{ margin-top:16px; max-height:200px; overflow-y:auto; display:flex; flex-direction:column; gap:10px; font-size:14px; line-height:1.5; padding-bottom:44px; }
 .cat-log__row{ display:flex; gap:10px; align-items:baseline; }
 .cat-log__row--you{ justify-content:flex-end; text-align:right; }
 .cat-log__who{ font-family:var(--mono); font-size:10px; text-transform:uppercase; letter-spacing:.14em; color:var(--muted); flex:0 0 auto; padding-top:2px; }
