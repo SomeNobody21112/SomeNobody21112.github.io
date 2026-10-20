@@ -40,7 +40,7 @@
     mode: "idle",            // idle | walk | eat | chase | sit
     affection: 18, visible: false, reached: false, audio: false,
     treat: null, laser: null, nextThink: 0, nextMeow: 0,
-    groomUntil: 0, nextGroom: 4000, atEnd: false
+    groomUntil: 0, nextGroom: 4000, atEnd: false, talking: false, petting: false
   };
 
   function clamp(v, a, b) { return v < a ? a : v > b ? b : v; }
@@ -159,18 +159,39 @@
      cell 20x17, row 0 = walk / row 1 = run, drawn facing right (CSS scaleX flips him for
      leftward travel). Asset has no sit/sleep pose, so idle freezes on a standing frame. */
   var catCv = document.getElementById("catCanvas"), catCx = catCv ? catCv.getContext("2d") : null;
-  var CW = 20, CH = 17, SHEET = new Image(), sheetOK = false;
-  SHEET.onload = function () { sheetOK = true; };
+  var CW = 20, CH = 17, SHEET = new Image(), sheetOK = false, EYES = null;
+  SHEET.onload = function () { sheetOK = true; findEyes(); };
   SHEET.src = "assets/cat_sprites.png";
+  function findEyes() {                            // locate the green eyes once (same-origin PNG) so petting can shut them where they actually are
+    try {
+      var oc = document.createElement("canvas"); oc.width = CW; oc.height = CH;
+      var o = oc.getContext("2d"); o.imageSmoothingEnabled = false;
+      o.drawImage(SHEET, 0, 0, CW, CH, 0, 0, CW, CH);
+      var d = o.getImageData(0, 0, CW, CH).data, x0 = 1e9, y0 = 1e9, x1 = -1, y1 = -1;
+      for (var y = 0; y < CH; y++) for (var x = 0; x < CW; x++) {
+        var i = (y * CW + x) * 4;
+        if (d[i + 3] > 80 && d[i + 1] > 90 && d[i + 1] > d[i] + 25 && d[i + 1] > d[i + 2] + 25) {
+          if (x < x0) x0 = x; if (y < y0) y0 = y; if (x > x1) x1 = x; if (y > y1) y1 = y;
+        }
+      }
+      if (x1 >= x0) EYES = { x0: x0, y0: y0, x1: x1, y1: y1 };
+    } catch (e) { /* tainted/no pixel data → petting just freezes, without the shut-eye overlay */ }
+  }
   function renderCat(now) {
     if (!catCx || !sheetOK) return;
     var running = S.phase === "dart" || S.mode === "chase";
-    var moving = running || S.mode === "walk";
+    var moving = (running || S.mode === "walk") && !S.petting;   // frozen while you pet him
     var row = running ? 1 : 0, dur = running ? 100 : 200;
     var fi = moving ? (Math.floor(now / dur) % 6) : 0;
     catCx.imageSmoothingEnabled = false;
     catCx.clearRect(0, 0, catCv.width, catCv.height);
     catCx.drawImage(SHEET, fi * CW, row * CH, CW, CH, 0, 0, catCv.width, catCv.height);
+    if (S.petting && EYES) {                        // happy shut eyes: cover the green, draw a closed lid line
+      var sx = catCv.width / CW, sy = catCv.height / CH,
+          ew = (EYES.x1 - EYES.x0 + 1) * sx, eh = (EYES.y1 - EYES.y0 + 1) * sy;
+      catCx.fillStyle = "#363636"; catCx.fillRect(EYES.x0 * sx, EYES.y0 * sy, ew, eh);
+      catCx.fillStyle = "#0e0e0e"; catCx.fillRect(EYES.x0 * sx, EYES.y0 * sy + eh * 0.42, ew, Math.max(2, eh * 0.32));
+    }
   }
 
   /* ---- the cat tree (pixel, drawn low-res then scaled crisp) ---- */
@@ -339,12 +360,18 @@
   });
 
   /* ----------------------------------------------------------------- petting */
-  var petReset, petCount = 0;
+  var petReset, petCount = 0, petStillTimer;
   function pet() {
     unlockAudio();
     affect(4); hearts(4); meow(true);
+    // hold still, eyes shut, while he's being petted; repeated pets keep him there
+    S.petting = true;
+    if (S.phase === "live") { S.mode = "idle"; S.tx = S.px; S.ty = S.py; }
     cat.classList.add("is-happy");
-    setTimeout(function () { cat.classList.remove("is-happy"); }, 900);
+    clearTimeout(petStillTimer);
+    petStillTimer = setTimeout(function () {       // hearts are gone (~1.1s) → eyes open, back to normal roaming
+      S.petting = false; cat.classList.remove("is-happy"); S.nextThink = 0;
+    }, 1200);
     petCount++; clearTimeout(petReset); petReset = setTimeout(function () { petCount = 0; }, 6000);
     if (S.reached) say(pick(LINES.pet), 3200);
     if (S.reached && S.affection > 62 && !S.dadOffered && Math.random() < 0.5) { S.dadOffered = true; offerDad(true); }
@@ -432,6 +459,16 @@
     return { text: pick(LINES.fallback) };
   }
 
+  // hold still while you're talking to him (input focused or a reply pending); don't disturb active play
+  function holdStill(on) {
+    S.talking = on;
+    if (on && S.phase === "live" && S.mode !== "chase" && S.mode !== "eat" && !S.treat) { S.mode = "idle"; S.tx = S.px; S.ty = S.py; }
+  }
+  if (ask) {
+    ask.addEventListener("focus", function () { holdStill(true); });
+    ask.addEventListener("blur", function () { setTimeout(function () { if (document.activeElement !== ask && !S.petting) { holdStill(false); S.nextThink = 0; } }, 1200); });
+  }
+
   var chatHist = [];                 // {role, content} turns for the LLM
   function catReply(text, dad) {
     say(text.length > 118 ? text.slice(0, 115) + "…" : text, 6000);
@@ -439,6 +476,8 @@
     chatHist.push({ role: "assistant", content: text });
     if (chatHist.length > 8) chatHist = chatHist.slice(-8);
     meow();
+    // once he's answered, if you've clicked away, resume roaming shortly
+    setTimeout(function () { if (document.activeElement !== ask && !S.petting) { holdStill(false); S.nextThink = 0; } }, 2200);
   }
 
   if (form) form.addEventListener("submit", function (e) {
@@ -446,6 +485,7 @@
     var v = (ask.value || "").trim(); if (!v) return;
     logLine("you", v); ask.value = "";
     chatHist.push({ role: "user", content: v });
+    holdStill(true);                 // stay put while answering
 
     if (!BRAIN_URL) {                // no brain wired up → instant keyword Vladimir
       var a = agent(v);
@@ -638,7 +678,8 @@
     renderCat(now); renderTower(now);
 
     if (S.phase === "live") {
-      if (now > S.nextThink && S.mode !== "chase" && S.mode !== "eat") { think(); S.nextThink = now + rand(2600, 3700); }
+      if (S.talking || S.petting) { S.nextThink = now + 1200; }   // frozen while you pet or talk to him
+      else if (now > S.nextThink && S.mode !== "chase" && S.mode !== "eat") { think(); S.nextThink = now + rand(2600, 3700); }
       if (S.visible && now > S.nextMeow) { meow(); S.nextMeow = now + rand(9000, 22000); }
       if (S.mode !== "walk" && S.mode !== "chase" && S.mode !== "eat" && now > S.nextGroom && now > S.groomUntil) {
         S.groomUntil = now + 2600; S.nextGroom = now + rand(9000, 16000);   // occasional paw-lick
