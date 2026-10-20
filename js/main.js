@@ -108,13 +108,23 @@
       scrollTrigger: { trigger: el, start: "top 88%" } });
   });
 
-  /* section-head titles: masked wipe-up (Obys-style) */
-  G.utils.toArray(".sec-head__title, .about__h").forEach(function (el) {
+  /* section-head titles: masked wipe-up (Obys-style) + bold horizontal scroll-drift */
+  G.utils.toArray(".sec-head__title, .about__h").forEach(function (el, i) {
     var mask = document.createElement("div"); mask.className = "mask-line";
     el.parentNode.insertBefore(mask, el); mask.appendChild(el);
     G.set(el, { yPercent: 116 });
     G.to(el, { yPercent: 0, duration: 1.15, ease: "power4.out",
       scrollTrigger: { trigger: mask, start: "top 90%" } });
+    // bold sweep: alternate side per heading, scrubbed across its time on screen.
+    // translate the mask wrapper (section clips it at the viewport edge; transforms don't reflow).
+    if (mask.closest(".work")) return;                 // skip the pinned gallery title
+    mask.classList.add("mask-line--sweep");
+    var dir = i % 2 ? 1 : -1;
+    function amp() { return (matchMedia("(max-width:760px)").matches ? 14 : 30) * dir; }
+    G.fromTo(mask,
+      { x: function () { return amp() + "vw"; } },
+      { x: function () { return (-amp()) + "vw"; }, ease: "none",
+        scrollTrigger: { trigger: mask, start: "top bottom", end: "bottom top", scrub: 1, invalidateOnRefresh: true } });
   });
   G.utils.toArray(".contact__big .w").forEach(function (el) {
     G.from(el, { yPercent: 118, duration: 1.1, ease: "power4.out",
