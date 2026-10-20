@@ -124,12 +124,12 @@
      momentum, so every heading reliably slides as its top crosses the fold. */
   var sweepPending = [];
   G.utils.toArray(".sec-head__title, .about__h").forEach(function (el, i) {
-    el.style.setProperty("--amp", (i % 2 ? 1 : -1) * (matchMedia("(max-width:760px)").matches ? 16 : 34) + "vw");
+    el.style.setProperty("--amp", (i % 2 ? 1 : -1) * (matchMedia("(max-width:760px)").matches ? 12 : 22) + "vw");
     el.classList.add("is-sweep");
     sweepPending.push(el);
   });
   function sweepCheck() {
-    var line = innerHeight * 0.85;                      // slide in once the top crosses here
+    var line = innerHeight * 0.95;                      // start the glide as the top just enters, so it's settling by the time it's in view
     for (var j = sweepPending.length - 1; j >= 0; j--) {
       if (sweepPending[j].getBoundingClientRect().top < line) {
         sweepPending[j].classList.add("is-in");
@@ -675,13 +675,14 @@
         var last = own.reduce(function (m, x) { var d = new Date(x.pushed_at); return d > m ? d : m; }, new Date(0));
         set("active", last > new Date(0) ? mon(last) : "—");
         var SKIP = { "somenobody21112": 1, "iot-maintenance": 1 };
-        var top = own.filter(function (x) { return !SKIP[x.name.toLowerCase()]; })
+        var top = own.filter(function (x) { return !SKIP[x.name.toLowerCase()] && !/inai[\s_-]?aram/i.test(x.name); })
           .sort(function (a, b) {
             return ((b.description ? 1 : 0) - (a.description ? 1 : 0)) ||
                    (b.stargazers_count - a.stargazers_count) ||
                    (new Date(b.pushed_at) - new Date(a.pushed_at));
           })
           .slice(0, 6);
+        if (top.length % 2) top.pop();  // ponytail: keep the receipts grid even
         if (list) list.innerHTML = top.map(function (x) {
           var star = x.stargazers_count > 0 ? "  ·  ★ " + x.stargazers_count : "";
           // ponytail: tiny fallback map for repos with no GitHub description
