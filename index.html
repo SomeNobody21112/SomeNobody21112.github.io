@@ -366,7 +366,8 @@
     </div>
   </section>
 
-  <!-- ░░ AMBIENT FIELD (interactive) ░░ -->
+  <!-- ░░ AMBIENT FIELD + Vladimir's world — he sleeps on the field box, then darts to his house ░░ -->
+  <div class="cat-world" id="catWorld">
   <section class="field" id="field" aria-label="Interactive particle field">
     <canvas class="field__canvas" id="fieldCanvas"></canvas>
     <div class="field__overlay">
@@ -383,51 +384,19 @@
       <h2 class="sec-head__title">Meet <em>Vladimir.</em></h2>
       <p class="catyard__sub">Vladimir “Longcat” Pawtin — a communist black cat, allegedly both alive and dead. Pet him, feed him, point the laser, or ask him anything about me.</p>
 
-      <div class="cat-stage" id="catStage">
-        <div class="cat-stage__affection"><span>Affection</span><div class="cat-stage__bar"><i id="catBar"></i></div></div>
-        <div class="cat" id="cat">
-          <div class="cat__bubble" id="catBubble" role="status" aria-live="polite"></div>
-          <div class="cat__art">
-            <svg class="cat-svg" viewBox="0 0 240 160" width="188" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-              <defs>
-                <linearGradient id="catFur" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0" stop-color="#262626"/><stop offset="1" stop-color="#060606"/>
-                </linearGradient>
-              </defs>
-              <path class="ct-tail" fill="url(#catFur)" d="M62,110 C30,106 13,78 20,46 C23,32 36,28 42,40 C33,62 44,88 68,98 Z"/>
-              <rect class="ct-leg ct-leg--ba" x="54" y="116" width="16" height="40" rx="8" fill="#0a0a0a"/>
-              <rect class="ct-leg ct-leg--bb" x="80" y="118" width="15" height="38" rx="7" fill="url(#catFur)"/>
-              <rect class="ct-leg ct-leg--fb" x="150" y="106" width="14" height="50" rx="7" fill="#0a0a0a"/>
-              <rect class="ct-leg ct-leg--fa" x="170" y="104" width="14" height="52" rx="7" fill="url(#catFur)"/>
-              <circle cx="70" cy="100" r="38" fill="url(#catFur)"/>
-              <ellipse cx="115" cy="96" rx="66" ry="37" fill="url(#catFur)"/>
-              <path d="M150,68 L198,58 L206,104 L156,110 Z" fill="url(#catFur)"/>
-              <circle cx="194" cy="74" r="28" fill="url(#catFur)"/>
-              <path d="M212,70 C225,70 227,84 214,88 C208,90 206,77 212,70 Z" fill="url(#catFur)"/>
-              <path class="ct-ear ct-ear--a" d="M172,54 L178,20 L199,48 Z" fill="url(#catFur)"/>
-              <path class="ct-ear ct-ear--b" d="M196,50 L217,22 L223,56 Z" fill="url(#catFur)"/>
-              <path d="M178,46 L181,30 L191,45 Z" fill="#3a302a" opacity=".55"/>
-              <path d="M203,46 L213,31 L216,49 Z" fill="#3a302a" opacity=".55"/>
-              <ellipse class="ct-eye" cx="198" cy="72" rx="8" ry="6" fill="#a7e86f"/>
-              <ellipse cx="199" cy="72" rx="2.4" ry="6" fill="#0b0b0b"/>
-              <circle cx="195.6" cy="70" r="1.5" fill="#fff" opacity=".85"/>
-              <rect class="ct-lid" x="189" y="65" width="19" height="13" rx="6" fill="url(#catFur)"/>
-              <path d="M216,80 l5,0 l-2.5,4 Z" fill="#caa08c"/>
-              <g stroke="rgba(255,255,255,.5)" stroke-width="1.2" fill="none" stroke-linecap="round">
-                <path d="M214,82 C226,82 234,80 240,78"/>
-                <path d="M214,85 C226,86 234,88 240,89"/>
-                <path d="M213,88 C224,91 230,94 236,97"/>
-              </g>
-            </svg>
-          </div>
-          <div class="cat__shadow"></div>
-        </div>
+      <div class="cat-floor" id="catStage">
+        <svg class="cat-house" viewBox="0 0 170 120" width="148" aria-hidden="true">
+          <path class="ch-wall" d="M14,112 L14,58 L85,16 L156,58 L156,112 Z"/>
+          <path class="ch-door" d="M85,112 L85,66 A20,20 0 0 0 45,66 L45,112 Z"/>
+          <path class="ch-roof" d="M8,61 L85,12 L162,61"/>
+        </svg>
+        <div class="cat-floor__affection"><span>Affection</span><div class="cat-floor__bar"><i id="catBar"></i></div></div>
       </div>
 
       <div class="cat-controls">
-        <button type="button" class="cat-btn" id="catTreat">🐟 Give a treat</button>
-        <button type="button" class="cat-btn" id="catPlay" aria-pressed="false">🔴 Laser</button>
-        <button type="button" class="cat-btn" id="catPet">✋ Pet him</button>
+        <button type="button" class="cat-btn" id="catTreat">Give a treat</button>
+        <button type="button" class="cat-btn" id="catPlay" aria-pressed="false">Laser pointer</button>
+        <button type="button" class="cat-btn" id="catPet">Pet him</button>
         <form class="cat-ask" id="catForm">
           <input class="cat-ask__in" id="catAsk" type="text" autocomplete="off" placeholder="Ask Vladimir about me, communism, or the moon landing…" aria-label="Ask Vladimir" />
           <button type="submit" class="cat-btn cat-btn--send">Ask</button>
@@ -436,6 +405,76 @@
       <div class="cat-log" id="catLog" aria-live="polite" data-lenis-prevent></div>
     </div>
   </section>
+
+    <!-- Vladimir himself — absolutely placed in cat-world so he can nap on the field box, then dart home -->
+    <div class="cat is-sleeping" id="cat">
+      <div class="cat__bubble" id="catBubble" role="status" aria-live="polite"></div>
+      <div class="cat__art">
+        <svg class="cat-svg" viewBox="0 0 240 182" width="190" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <defs>
+            <linearGradient id="catFur" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#2b2b2b"/><stop offset=".55" stop-color="#121212"/><stop offset="1" stop-color="#050505"/>
+            </linearGradient>
+          </defs>
+
+          <!-- AWAKE / walking -->
+          <g class="ct-awake">
+            <path class="ct-tail" fill="url(#catFur)" d="M60,122 C27,120 10,92 18,58 C21,42 36,38 43,50 C35,70 44,100 70,110 Z"/>
+            <rect class="ct-leg ct-leg--ba" x="56" y="126" width="15" height="44" rx="7.5" fill="#080808"/>
+            <ellipse class="ct-paw" cx="63" cy="170" rx="10" ry="4.5" fill="#070707"/>
+            <rect class="ct-leg ct-leg--bb" x="82" y="128" width="14" height="42" rx="7" fill="url(#catFur)"/>
+            <ellipse class="ct-paw" cx="89" cy="170" rx="9.5" ry="4.5" fill="#0c0c0c"/>
+            <rect class="ct-leg ct-leg--fb" x="150" y="118" width="13" height="52" rx="6.5" fill="#080808"/>
+            <ellipse class="ct-paw" cx="156" cy="170" rx="9.5" ry="4.5" fill="#070707"/>
+            <rect class="ct-leg ct-leg--fa" x="170" y="116" width="13" height="54" rx="6.5" fill="url(#catFur)"/>
+            <ellipse class="ct-paw" cx="176" cy="170" rx="9.5" ry="4.5" fill="#0c0c0c"/>
+            <circle cx="68" cy="110" r="40" fill="url(#catFur)"/>
+            <path class="ct-body" d="M58,108 C58,78 92,66 128,68 C176,70 196,86 196,104 C196,128 160,142 120,142 C86,142 58,132 58,108 Z" fill="url(#catFur)"/>
+            <path d="M150,78 L196,66 L206,112 L156,120 Z" fill="url(#catFur)"/>
+            <circle cx="194" cy="86" r="29" fill="url(#catFur)"/>
+            <path d="M212,82 C226,82 228,97 214,101 C208,103 206,89 212,82 Z" fill="url(#catFur)"/>
+            <path class="ct-ear ct-ear--a" d="M171,66 L176,30 L200,60 Z" fill="url(#catFur)"/>
+            <path class="ct-ear ct-ear--b" d="M197,61 L219,32 L224,68 Z" fill="url(#catFur)"/>
+            <path d="M178,58 L181,41 L192,57 Z" fill="#5a4b42" opacity=".5"/>
+            <path d="M203,58 L213,42 L217,61 Z" fill="#5a4b42" opacity=".5"/>
+            <ellipse class="ct-eye" cx="198" cy="85" rx="8.5" ry="7" fill="#a7e86f"/>
+            <ellipse cx="199" cy="85" rx="2.4" ry="7" fill="#070707"/>
+            <circle cx="195.4" cy="82.5" r="1.6" fill="#fff" opacity=".9"/>
+            <rect class="ct-lid" x="188" y="77" width="21" height="15" rx="6.5" fill="url(#catFur)"/>
+            <path d="M215,92 l6,1 l-3,4.5 Z" fill="#d6a594"/>
+            <path d="M218,97.5 q-3,4 -8,4" stroke="#070707" stroke-width="1.3" fill="none"/>
+            <g stroke="rgba(255,255,255,.6)" stroke-width="1.2" fill="none" stroke-linecap="round">
+              <path d="M214,93 C227,91 235,89 241,87"/>
+              <path d="M214,96 C227,97 235,98 241,99"/>
+              <path d="M213,99 C224,102 231,105 237,108"/>
+            </g>
+          </g>
+
+          <!-- SLEEPING / curled, one front paw dangling -->
+          <g class="ct-sleep">
+            <path d="M54,138 C50,106 86,90 124,90 C170,90 198,106 198,136 C198,150 168,158 122,158 C76,158 54,150 54,138 Z" fill="url(#catFur)"/>
+            <path class="ct-sleeptail" d="M60,150 C28,158 13,135 23,109 C28,98 39,100 39,113 C37,129 51,141 73,137 Z" fill="url(#catFur)"/>
+            <g class="ct-dangle">
+              <rect x="150" y="140" width="13" height="40" rx="6.5" fill="#070707"/>
+              <ellipse cx="156" cy="180" rx="9" ry="4" fill="#070707"/>
+            </g>
+            <circle cx="184" cy="120" r="29" fill="url(#catFur)"/>
+            <path class="ct-ear" d="M163,104 L169,72 L190,100 Z" fill="url(#catFur)"/>
+            <path d="M191,100 L210,73 L216,106 Z" fill="url(#catFur)"/>
+            <path d="M169,96 L172,80 L182,95 Z" fill="#5a4b42" opacity=".5"/>
+            <path class="ct-sleepeye" d="M170,118 q8,6 16,0" stroke="#0b0b0b" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+            <path d="M207,124 l6,1 l-3,4.5 Z" fill="#d6a594"/>
+            <path d="M210,129.5 q-3,4 -8,4" stroke="#070707" stroke-width="1.2" fill="none"/>
+            <g stroke="rgba(255,255,255,.55)" stroke-width="1.1" fill="none" stroke-linecap="round">
+              <path d="M205,125 C217,124 225,123 232,122"/>
+              <path d="M205,128 C217,129 224,131 230,133"/>
+            </g>
+          </g>
+        </svg>
+      </div>
+      <div class="cat__shadow"></div>
+    </div>
+  </div><!-- /cat-world -->
 
   <!-- ░░ CONTACT ░░ -->
   <section class="contact" id="contact">

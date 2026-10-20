@@ -426,63 +426,85 @@ a:focus-visible{ outline:2px solid var(--fg); outline-offset:4px; }
 /* terminal: subtle cue once it has captured scroll (after a click) */
 .cli--active{ border-color:var(--dim); }
 
-/* ===== Vladimir — pet cat play area ===== */
+/* ===== Vladimir — pet cat, sleeps on the field box then darts home ===== */
+.cat-world{ position:relative; }            /* his whole range: field box → play area */
 .catyard{ overflow-x:clip; }
 .catyard__sub{ max-width:60ch; margin-top:14px; color:var(--muted); font-size:15px; line-height:1.6; }
 
-.cat-stage{ position:relative; margin-top:26px; height:clamp(360px,52vh,520px);
-  border-radius:18px; overflow:hidden; border:1px solid var(--line);
-  background:radial-gradient(130% 115% at 50% 10%, #f1eee6, #ded9cd 60%, #cdc7b9);
-  box-shadow:inset 0 2px 26px rgba(0,0,0,.09); }
-.cat-stage::after{ content:""; position:absolute; left:0; right:0; bottom:0; height:36%;
-  background:linear-gradient(transparent, rgba(120,110,95,.16)); pointer-events:none; }
-.cat-stage__affection{ position:absolute; top:14px; left:16px; z-index:5; display:flex; align-items:center; gap:8px;
-  font-family:var(--mono); font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#6a665e; }
-.cat-stage__bar{ width:92px; height:5px; border-radius:3px; background:rgba(0,0,0,.12); overflow:hidden; }
-.cat-stage__bar i{ display:block; height:100%; width:18%; background:#c0271f; transition:width .4s ease; }
+/* play floor — no panel, same ground as the rest of the site */
+.cat-floor{ position:relative; margin-top:26px; height:clamp(360px,52vh,520px); }
+.cat-floor__affection{ position:absolute; top:6px; left:2px; z-index:5; display:flex; align-items:center; gap:8px;
+  font-family:var(--mono); font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); }
+.cat-floor__bar{ width:92px; height:5px; border-radius:3px; background:var(--faint); overflow:hidden; }
+.cat-floor__bar i{ display:block; height:100%; width:18%; background:#c0271f; transition:width .4s ease; }
 
-/* cat anchor — JS positions this in px; the feet sit at (left,top) */
-.cat{ position:absolute; left:50%; top:62%; width:0; height:0; z-index:3; }
-.cat__art{ position:absolute; left:0; bottom:0; width:188px;
+/* his little house, drawn in the site's own ink */
+.cat-house{ position:absolute; left:3%; bottom:7%; width:clamp(118px,15vw,150px); height:auto; z-index:1; }
+.cat-house .ch-wall{ fill:none; stroke:var(--line); stroke-width:2; }
+.cat-house .ch-roof{ fill:none; stroke:var(--dim); stroke-width:2.6; stroke-linecap:round; stroke-linejoin:round; }
+.cat-house .ch-door{ fill:rgba(0,0,0,.06); stroke:var(--line); stroke-width:1.4; }
+
+/* cat anchor — JS positions this in cat-world px; the feet sit at (left,top) */
+.cat{ position:absolute; left:0; top:0; width:0; height:0; z-index:6; }
+.cat__art{ position:absolute; left:0; bottom:0; width:190px;
   transform:translate(-50%,0) scaleX(var(--face,1)) scale(var(--scale,1)); transform-origin:bottom center; will-change:transform; }
-.cat-svg{ display:block; width:188px; height:auto; animation:catBreathe 3.6s ease-in-out infinite; }
+.cat.is-sleeping .cat__art{ transform:translate(-50%,24px) scaleX(var(--face,1)) scale(var(--scale,1)); } /* paw dips over the edge */
+.cat-svg{ display:block; width:190px; height:auto; animation:catBreathe 3.8s ease-in-out infinite; }
 .cat.is-walking .cat-svg{ animation:catBob .34s ease-in-out infinite; }
-.cat__shadow{ position:absolute; left:0; bottom:-2px; width:128px; height:20px; transform:translate(-50%,0);
-  background:radial-gradient(50% 50% at 50% 50%, rgba(0,0,0,.26), transparent 70%); filter:blur(1px); }
+.cat.is-running .cat-svg{ animation:catBob .18s ease-in-out infinite; }
+.cat__shadow{ position:absolute; left:0; bottom:-2px; width:128px; height:20px; transform:translate(-50%,0) scaleX(var(--scale,1));
+  background:radial-gradient(50% 50% at 50% 50%, rgba(0,0,0,.22), transparent 70%); filter:blur(1px); }
+.cat.is-sleeping .cat__shadow{ opacity:0; }
 
-/* parts */
+/* pose toggle */
+.ct-sleep{ display:none; }
+.cat.is-sleeping .ct-awake{ display:none; }
+.cat.is-sleeping .ct-sleep{ display:block; }
+
+/* parts — awake */
 .ct-tail{ transform-box:fill-box; transform-origin:84% 88%; animation:catTail 3.2s ease-in-out infinite; }
-.cat.is-happy .ct-tail{ animation-duration:.5s; }
+.cat.is-happy .ct-tail,.cat.is-walking .ct-tail{ animation-duration:.6s; }
 .ct-ear{ transform-box:fill-box; transform-origin:50% 100%; animation:catEar 7s ease-in-out infinite; }
 .ct-lid{ transform-box:fill-box; transform-origin:50% 0; transform:scaleY(0); animation:catBlink 5.5s ease-in-out infinite; }
-.ct-leg{ transform-box:fill-box; transform-origin:50% 10%; }
+.ct-leg{ transform-box:fill-box; transform-origin:50% 8%; }
 .cat.is-walking .ct-leg--fa,.cat.is-walking .ct-leg--ba{ animation:catStepA .34s linear infinite; }
 .cat.is-walking .ct-leg--fb,.cat.is-walking .ct-leg--bb{ animation:catStepB .34s linear infinite; }
+.cat.is-running .ct-leg--fa,.cat.is-running .ct-leg--ba{ animation:catStepA .18s linear infinite; }
+.cat.is-running .ct-leg--fb,.cat.is-running .ct-leg--bb{ animation:catStepB .18s linear infinite; }
+
+/* parts — sleeping: the dangling front paw swings, tail-tip drifts */
+.ct-dangle{ transform-box:fill-box; transform-origin:50% 3%; animation:catDangle 1.9s ease-in-out infinite; }
+.ct-sleeptail{ transform-box:fill-box; transform-origin:88% 80%; animation:catTail 5s ease-in-out infinite; }
 
 @keyframes catBreathe{ 0%,100%{ transform:translateY(0) } 50%{ transform:translateY(-2px) } }
 @keyframes catBob{ 0%,100%{ transform:translateY(0) } 50%{ transform:translateY(-4px) } }
 @keyframes catTail{ 0%,100%{ transform:rotate(-6deg) } 50%{ transform:rotate(9deg) } }
 @keyframes catEar{ 0%,92%,100%{ transform:rotate(0) } 95%{ transform:rotate(-8deg) } }
 @keyframes catBlink{ 0%,94%,100%{ transform:scaleY(0) } 97%{ transform:scaleY(1) } }
-@keyframes catStepA{ 0%,100%{ transform:translateY(0) rotate(0) } 50%{ transform:translateY(-3px) rotate(-7deg) } }
-@keyframes catStepB{ 0%,100%{ transform:translateY(-3px) rotate(7deg) } 50%{ transform:translateY(0) rotate(0) } }
+@keyframes catStepA{ 0%,100%{ transform:translateY(0) rotate(0) } 50%{ transform:translateY(-3px) rotate(-8deg) } }
+@keyframes catStepB{ 0%,100%{ transform:translateY(-3px) rotate(8deg) } 50%{ transform:translateY(0) rotate(0) } }
+@keyframes catDangle{ 0%,100%{ transform:rotate(-11deg) } 50%{ transform:rotate(12deg) } }
 
 /* speech bubble */
 .cat__bubble{ position:absolute; left:0; bottom:150px; transform:translate(-50%,10px);
   max-width:230px; width:max-content; padding:10px 14px; border-radius:14px;
   background:#141414; color:#f4f1ea; font-size:13px; line-height:1.4; text-align:center;
-  opacity:0; pointer-events:none; transition:opacity .25s, transform .25s; box-shadow:0 10px 26px rgba(0,0,0,.28); z-index:6; }
+  opacity:0; pointer-events:none; transition:opacity .25s, transform .25s; box-shadow:0 10px 26px rgba(0,0,0,.28); z-index:7; }
 .cat__bubble.is-on{ opacity:1; transform:translate(-50%,0); }
 .cat__bubble::after{ content:""; position:absolute; left:50%; bottom:-7px; transform:translateX(-50%);
   border:7px solid transparent; border-top-color:#141414; border-bottom:0; }
 
-/* treats, laser, hearts */
-.cat-treat{ position:absolute; transform:translate(-50%,-50%); font-size:26px; z-index:2; animation:catPop .3s ease; }
+/* treats (drawn fish), laser, hearts (drawn) */
+.cat-treat{ position:absolute; width:30px; transform:translate(-50%,-50%); z-index:2; animation:catPop .3s ease; }
+.cat-treat svg{ display:block; width:100%; height:auto; }
+.cat-treat svg ellipse,.cat-treat svg path{ fill:#b8732e; }
+.cat-treat svg .cat-treat__eye{ fill:#141414; }
 .cat-treat.is-eaten{ opacity:0; transform:translate(-50%,-50%) scale(.2); transition:.25s; }
 .cat-laser{ position:absolute; width:14px; height:14px; transform:translate(-50%,-50%); border-radius:50%;
   background:radial-gradient(circle,rgb(255,64,64),#c40000); box-shadow:0 0 12px 4px rgba(255,40,40,.65); z-index:4; pointer-events:none; }
-.cat-heart{ position:absolute; transform:translate(-50%,-50%); color:#d9504d; font-size:18px; pointer-events:none; z-index:6; animation:catHeart 1.1s ease-out forwards; }
-.cat-stage.is-laser{ cursor:crosshair; }
+.cat-heart{ position:absolute; width:17px; transform:translate(-50%,-50%); pointer-events:none; z-index:6; animation:catHeart 1.1s ease-out forwards; }
+.cat-heart svg{ display:block; width:100%; height:auto; fill:#d9504d; }
+.cat-floor.is-laser{ cursor:crosshair; }
 @keyframes catPop{ 0%{ transform:translate(-50%,-50%) scale(.2) } 60%{ transform:translate(-50%,-50%) scale(1.15) } 100%{ transform:translate(-50%,-50%) scale(1) } }
 @keyframes catHeart{ 0%{ opacity:0; transform:translate(-50%,-50%) scale(.4) } 20%{ opacity:1 } 100%{ opacity:0; transform:translate(-50%,-190%) scale(1.1) } }
 
@@ -509,5 +531,5 @@ a:focus-visible{ outline:2px solid var(--fg); outline-offset:4px; }
   background:#1f8f6b; color:#fff; text-decoration:none; white-space:nowrap; transition:filter .2s; }
 .cat-dad:hover{ filter:brightness(1.08); }
 
-@media (max-width:620px){ .cat-stage{ height:clamp(320px,62vh,440px); } .cat__art{ width:150px; } .cat-svg{ width:150px; } }
-@media (prefers-reduced-motion:reduce){ .cat-svg,.ct-tail,.ct-ear,.ct-lid,.ct-leg{ animation:none !important; } }
+@media (max-width:620px){ .cat-floor{ height:clamp(320px,62vh,440px); } .cat__art,.cat-svg{ width:150px; } }
+@media (prefers-reduced-motion:reduce){ .cat-svg,.ct-tail,.ct-ear,.ct-lid,.ct-leg,.ct-dangle,.ct-sleeptail{ animation:none !important; } }

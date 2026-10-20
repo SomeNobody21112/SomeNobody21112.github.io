@@ -1,40 +1,57 @@
 /* ============================================================================
-   Vladimir "Longcat" Pawtin — a communist black cat that roams his play area,
-   takes treats, chases a laser, gets pets, meows (only once you've reached him),
-   answers questions about Sri, and quietly offers to connect you with "his dad".
+   Vladimir "Longcat" Pawtin — a communist black cat.
+
+   He naps on top of the "next one's loading" box with one front paw dangling
+   and swinging. The moment you scroll down to his play area he wakes and darts
+   home to his house, then roams: takes treats, chases a laser, gets pets,
+   meows (only once he's reached home and you can see him), answers questions
+   about Sri, and quietly offers to connect you with "his dad".
 
    Roaming/attention behaviour follows the open-source oneko.js model
-   (https://github.com/adryd325/oneko.js, MIT) — the cat is rendered as smooth
-   SVG here instead of a pixel sprite, so it stays crisp at any size.
-   Self-contained, vanilla JS, no dependency on the site's GSAP/Lenis stack.
+   (https://github.com/adryd325/oneko.js, MIT) — rendered as smooth SVG here
+   instead of a pixel sprite, so he stays crisp at any size. Vanilla JS, no
+   dependency on the site's GSAP/Lenis stack.
    ========================================================================== */
 (function () {
   "use strict";
 
-  var stage = document.getElementById("catStage");
+  var world = document.getElementById("catWorld");
+  var stage = document.getElementById("catStage");   // the floor / play area (roam bounds)
+  var box = document.querySelector(".field__title") || document.querySelector(".field__overlay"); // the "next one's loading" box he sleeps on
   var cat = document.getElementById("cat");
   var bubble = document.getElementById("catBubble");
   var bar = document.getElementById("catBar");
   var logEl = document.getElementById("catLog");
   var form = document.getElementById("catForm");
   var ask = document.getElementById("catAsk");
-  if (!stage || !cat || !bubble) return;
+  if (!world || !stage || !cat || !bubble) return;
 
   var reduce = matchMedia("(prefers-reduced-motion:reduce)").matches;
   var WA = "https://wa.me/917305289070"; // "his dad" — never announced as WhatsApp up front
 
-  // ---- state (positions are 0..1 fractions of the stage) ----
+  // positions are in cat-world pixels (layout coords, scroll-independent)
   var S = {
-    x: 0.5, y: 0.62, tx: 0.5, ty: 0.62, face: 1,
+    px: 0, py: 0, tx: 0, ty: 0, face: 1,
+    phase: "sleep",          // sleep | dart | live
     mode: "idle",            // idle | walk | eat | chase | sit
-    affection: 18, visible: false, audio: false,
+    affection: 18, visible: false, reached: false, audio: false,
     treat: null, laser: null, nextThink: 0, nextMeow: 0
   };
 
-  function stageSize() { var r = stage.getBoundingClientRect(); return { w: r.width, h: r.height }; }
   function clamp(v, a, b) { return v < a ? a : v > b ? b : v; }
   function rand(a, b) { return a + Math.random() * (b - a); }
   function pick(a) { return a[(Math.random() * a.length) | 0]; }
+
+  // rect of an element relative to cat-world (difference cancels scroll)
+  function wrect(el) {
+    var w = world.getBoundingClientRect(), r = el.getBoundingClientRect();
+    return { x: r.left - w.left, y: r.top - w.top, w: r.width, h: r.height };
+  }
+  function floorBox() { return wrect(stage); }
+  function toWorld(fx, fy) { var f = floorBox(); return { x: f.x + fx * f.w, y: f.y + fy * f.h }; }
+  function catInFloorPx() { var f = floorBox(); return { x: S.px - f.x, y: S.py - f.y }; }
+  function perchPos() { var b = wrect(box); return { x: b.x + Math.min(b.w * 0.40, 520), y: b.y + 14 }; } // naps on the "loading…" word
+  function housePos() { var f = floorBox(); return { x: f.x + f.w * 0.22, y: f.y + f.h * 0.82 }; } // his house
 
   /* ------------------------------------------------------------------ speech */
   var bubbleTimer;
@@ -59,17 +76,19 @@
   }
 
   /* ------------------------------------------------------- affection + hearts */
+  var HEART = '<svg viewBox="0 0 20 18" aria-hidden="true"><path d="M10,17 C-3,8.5 3,0.5 10,6 C17,0.5 23,8.5 10,17 Z"/></svg>';
+  var FISH = '<svg viewBox="0 0 28 16" aria-hidden="true"><ellipse cx="11" cy="8" rx="9.5" ry="5.4"/><path d="M19.5,8 L28,2.5 L28,13.5 Z"/><circle cx="6" cy="6.6" r="1.1" class="cat-treat__eye"/></svg>';
   function affect(d) {
     S.affection = clamp(S.affection + d, 0, 100);
     if (bar) bar.style.width = S.affection + "%";
   }
   function hearts(n) {
-    var sz = stageSize(), px = S.x * sz.w, py = S.y * sz.h;
+    var c = catInFloorPx();
     for (var i = 0; i < (n || 3); i++) {
       var h = document.createElement("div");
-      h.className = "cat-heart"; h.textContent = Math.random() < 0.25 ? "★" : "♥";
-      h.style.left = (px + rand(-26, 26)) + "px";
-      h.style.top = (py - rand(20, 60)) + "px";
+      h.className = "cat-heart"; h.innerHTML = HEART;
+      h.style.left = (c.x + rand(-26, 26)) + "px";
+      h.style.top = (c.y - rand(14, 54)) + "px";
       stage.appendChild(h);
       (function (el) { setTimeout(function () { el.remove(); }, 1100); })(h);
     }
@@ -85,9 +104,9 @@
       S.audio = true;
     } catch (e) { /* no audio, stay silent */ }
   }
-  // a cat-ish meow: pitch glides up then down through a band-pass, with vibrato
+  // meows are only heard once he's reached home and you can see him
   function meow(happy) {
-    if (!S.visible || !S.audio || !actx) return;
+    if (!S.reached || !S.visible || !S.audio || !actx) return;
     var t = actx.currentTime, dur = happy ? 0.34 : 0.5;
     var osc = actx.createOscillator(), vib = actx.createOscillator(), vg = actx.createGain();
     var bp = actx.createBiquadFilter(), g = actx.createGain();
@@ -96,7 +115,7 @@
     osc.frequency.setValueAtTime(base, t);
     osc.frequency.linearRampToValueAtTime(base + 230, t + dur * 0.35);
     osc.frequency.linearRampToValueAtTime(base - 120, t + dur);
-    vib.frequency.value = 26; vg.gain.value = 18; vib.connect(vg); vg.connect(osc.frequency); // vibrato
+    vib.frequency.value = 26; vg.gain.value = 18; vib.connect(vg); vg.connect(osc.frequency);
     bp.type = "bandpass"; bp.frequency.value = 1300; bp.Q.value = 6;
     g.gain.setValueAtTime(0.0001, t);
     g.gain.exponentialRampToValueAtTime(0.22, t + 0.05);
@@ -107,19 +126,19 @@
 
   /* ---------------------------------------------------------------- treats */
   function dropTreat() {
-    if (S.treat) return;
-    var el = document.createElement("div"); el.className = "cat-treat"; el.textContent = "🐟";
-    var fx = rand(0.12, 0.88), fy = rand(0.68, 0.9);
+    if (S.phase !== "live" || S.treat) return;
+    var el = document.createElement("div"); el.className = "cat-treat"; el.innerHTML = FISH;
+    var fx = rand(0.14, 0.86), fy = rand(0.66, 0.9);
     el.style.left = (fx * 100) + "%"; el.style.top = (fy * 100) + "%";
     stage.appendChild(el);
-    S.treat = { el: el, x: fx, y: fy };
-    S.tx = fx; S.ty = fy; S.mode = "walk";
+    S.treat = { el: el, x: fx, y: fy }; S.mode = "walk";
     say(pick(LINES.treatSpotted), 3000);
   }
 
   /* ---------------------------------------------------------------- laser */
   var laserOn = false, laserEl;
   function toggleLaser() {
+    if (S.phase !== "live") return;
     laserOn = !laserOn;
     if (laserOn) {
       laserEl = document.createElement("div"); laserEl.className = "cat-laser"; stage.appendChild(laserEl);
@@ -136,8 +155,8 @@
   stage.addEventListener("pointermove", function (e) {
     if (!laserOn || !S.laser) return;
     var r = stage.getBoundingClientRect();
-    S.laser.x = clamp((e.clientX - r.left) / r.width, 0.03, 0.97);
-    S.laser.y = clamp((e.clientY - r.top) / r.height, 0.1, 0.95);
+    S.laser.x = clamp((e.clientX - r.left) / r.width, 0.04, 0.96);
+    S.laser.y = clamp((e.clientY - r.top) / r.height, 0.1, 0.94);
     if (laserEl) { laserEl.style.left = (S.laser.x * 100) + "%"; laserEl.style.top = (S.laser.y * 100) + "%"; }
   });
 
@@ -149,9 +168,8 @@
     cat.classList.add("is-happy");
     setTimeout(function () { cat.classList.remove("is-happy"); }, 900);
     petCount++; clearTimeout(petReset); petReset = setTimeout(function () { petCount = 0; }, 6000);
-    say(pick(LINES.pet), 3200);
-    // after enough love, Vladimir offers to connect you with "his dad"
-    if (S.affection > 62 && Math.random() < 0.5) offerDad(true);
+    if (S.reached) say(pick(LINES.pet), 3200);
+    if (S.reached && S.affection > 62 && Math.random() < 0.5) offerDad(true);
   }
   cat.addEventListener("click", function (e) { e.stopPropagation(); pet(); });
 
@@ -160,7 +178,7 @@
     var a = document.createElement("a");
     a.className = "cat-dad"; a.href = WA + "?text=" + encodeURIComponent(
       "Hi Sri — found you through your portfolio (Vladimir the cat sent me). I'd love to chat about ");
-    a.target = "_blank"; a.rel = "noopener"; a.textContent = "🐾 yes, introduce me →";
+    a.target = "_blank"; a.rel = "noopener"; a.textContent = "yes, introduce me →";
     return a;
   }
   function offerDad(inBubble) {
@@ -175,12 +193,10 @@
 
   function agent(raw) {
     var q = norm(raw);
-    // --- intent to reach / hire / contact Sri → offer "his dad" (never "whatsapp") ---
     if (has(q, "contact", "reach", "hire", "email", "message", "talk to", "get in touch", "recruit", "collab", "available", "work with", " dm "))
       return { text: pick(LINES.dad), dad: true };
     if (has(q, "whatsapp", "phone", "number", "call"))
       return { text: "I don't hand numbers to strangers, that's how the state finds you. But — " + pick(LINES.dad), dad: true };
-    // --- about Sri ---
     if (has(q, "who is", "about him", "your dad", "your owner", "your human", "sri ", "ramaanuja", "dasan"))
       return { text: "My dad is Sri Ramaanuja Dasan — second-year CSE, Forward Deployed Engineer at WinVinaya, ships AI that real humans use. He feeds me on time. He'd make an excellent commissar." };
     if (has(q, "project", "built", "portfolio", "made", "shipped", " work"))
@@ -203,21 +219,18 @@
       return { text: "His résumé is one tap away — the \"Résumé\" link up in the nav. Read it. Then join the party." };
     if (has(q, "goal", "future", "startup", "founder", "dream", "ambition"))
       return { text: "Long game: he founds his own company. I will chair the politburo and also nap." };
-    // --- Vladimir's politics ---
     if (has(q, "communist", "communism", "marx", "lenin", "socialis", "capitalis", "politic", "revolution", "proletariat"))
       return { text: pick(LINES.red) };
-    // --- conspiracies, for fun ---
     if (has(q, "conspiracy", "bird", "moon", "flat earth", "alien", "5g", "lizard", "illuminati", "ufo"))
       return { text: pick(LINES.conspiracy) };
-    // --- schrödinger ---
     if (has(q, "schrodinger", "schrödinger", "quantum", " box", "alive", "dead", "superposition", "physics"))
       return { text: pick(LINES.schro) };
     if (has(q, "your name", "who are you", "what are you", "vladimir", "pawtin"))
       return { text: "Vladimir \"Longcat\" Pawtin. Communist. Allegedly both alive and deceased. Head of feline affairs for Comrade Sri." };
     if (has(q, "treat", "food", "fish", "hungry", "eat", "snack"))
-      return { text: "Redistribute the treats to me. From each according to their ability, to each cat according to their appetite. (The 🐟 button, comrade.)" };
+      return { text: "Redistribute the treats to me. From each according to their ability, to each cat according to their appetite. (Use the Give a treat button, comrade.)" };
     if (has(q, "play", "laser", " toy", "pointer", " ball"))
-      return { text: "Point the red dot. I will pursue it to the ends of the dialectic. (The 🔴 button.)" };
+      return { text: "Point the red dot. I will pursue it to the ends of the dialectic. (Use the Laser pointer button.)" };
     if (has(q, " pet", "cute", "good boy", "good cat", "love you", "scratch"))
       return { text: "Yes. Again. The revolution runs on chin scratches." };
     if (has(q, "hello", " hi ", " hey", "meow", " yo "))
@@ -252,6 +265,11 @@
       "Wi-Fi is just the bourgeoisie hiding the mice.",
       "I contain a vial of poison and infinite opinions.",
       "Nap now, revolt later — possibly both at once. I'm quantum."
+    ],
+    arrive: [
+      "I made it home. The people's dacha. Come, pet me.",
+      "Ah — my house. You found me at the end. Meow. Acceptable.",
+      "You reached the end, comrade. So did I, faster. Now we discuss treats."
     ],
     hi: ["Greetings, comrade. Papers? No? Good. Sit.", "Meow means 'solidarity' in cat.", "A visitor. Have you considered redistribution?"],
     pet: ["Mnnnrrrp. Acceptable.", "The people's chin, scratched. Noted.", "Purring is a revolutionary act.", "More. For the collective."],
@@ -290,29 +308,56 @@
   /* ----------------------------------------------------- the roaming loop */
   function think() {
     if (S.mode === "eat" || S.mode === "chase") return;
-    if (S.treat) { S.tx = S.treat.x; S.ty = S.treat.y; S.mode = "walk"; return; }
-    if (Math.random() < 0.55) { S.tx = rand(0.12, 0.88); S.ty = rand(0.58, 0.9); S.mode = "walk"; }
+    if (S.treat) { S.mode = "walk"; return; }
+    if (Math.random() < 0.62) { var w = toWorld(rand(0.16, 0.84), rand(0.55, 0.9)); S.tx = w.x; S.ty = w.y; S.mode = "walk"; }
     else { S.mode = "sit"; }
     if (S.visible && Math.random() < 0.6) say(pick(LINES.idle), 4200);
   }
 
+  function startDart() {
+    if (S.phase !== "sleep") return;
+    S.phase = "dart"; cat.classList.remove("is-sleeping");
+    var h = housePos(); S.face = h.x >= S.px ? 1 : -1;
+  }
+
+  function place() {
+    var f = floorBox();
+    cat.style.left = S.px + "px"; cat.style.top = S.py + "px";
+    cat.style.setProperty("--face", S.face);
+    var fy = f.h ? (S.py - f.y) / f.h : 0.7;
+    var sc = S.phase === "sleep" ? 0.74 : clamp(0.80 + (fy - 0.55) * 0.5, 0.7, 1.08);
+    cat.style.setProperty("--scale", sc.toFixed(3));
+  }
+
   function frame(now) {
     requestAnimationFrame(frame);
-    var sz = stageSize(); if (!sz.w) return;
+    var f = floorBox(); if (!f.w) return;
 
-    if (S.mode === "chase" && S.laser) { S.tx = S.laser.x; S.ty = S.laser.y; }
+    if (S.phase === "sleep") { var p = perchPos(); S.px = p.x; S.py = p.y; place(); return; }
 
-    var dx = S.tx - S.x, dy = S.ty - S.y, dist = Math.hypot(dx, dy);
-    var moving = dist > 0.012 && (S.mode === "walk" || S.mode === "chase");
+    if (S.phase === "dart") { var h = housePos(); S.tx = h.x; S.ty = h.y; }
+    else if (S.mode === "chase" && S.laser) { var l = toWorld(S.laser.x, S.laser.y); S.tx = l.x; S.ty = l.y; }
+    else if (S.treat) { var tp = toWorld(S.treat.x, S.treat.y); S.tx = tp.x; S.ty = tp.y; }
+
+    var dx = S.tx - S.px, dy = S.ty - S.py, dist = Math.hypot(dx, dy);
+    var thr = S.phase === "dart" ? 12 : 9;
+    var moving = dist > thr && (S.phase === "dart" || S.mode === "walk" || S.mode === "chase");
 
     if (moving) {
-      var sp = (S.mode === "chase" ? 0.05 : 0.02) * (reduce ? 2.5 : 1);
-      S.x += dx * sp; S.y += dy * sp;
-      if (Math.abs(dx) > 0.003) S.face = dx > 0 ? 1 : -1;
+      var sp = S.phase === "dart" ? 0.16 : (S.mode === "chase" ? 0.09 : 0.05);
+      if (reduce) sp = Math.min(1, sp * 3);
+      S.px += dx * sp; S.py += dy * sp;
+      if (Math.abs(dx) > 2) S.face = dx > 0 ? 1 : -1;
       cat.classList.add("is-walking");
+      cat.classList.toggle("is-running", S.phase === "dart");
     } else {
-      cat.classList.remove("is-walking");
-      if (S.treat && dist <= 0.035) {
+      cat.classList.remove("is-walking"); cat.classList.remove("is-running");
+      if (S.phase === "dart") {                 // arrived home → wake up, live
+        S.phase = "live"; S.reached = true; S.mode = "idle";
+        S.nextThink = now + 700; S.nextMeow = now + 900;
+        say(pick(LINES.arrive), 4400);
+        setTimeout(function () { if (S.audio) meow(true); }, 520);
+      } else if (S.treat && dist <= thr + 10) {  // reached a treat → eat
         var tr = S.treat; S.treat = null; S.mode = "eat";
         tr.el.classList.add("is-eaten"); setTimeout(function () { tr.el.remove(); }, 260);
         affect(8); hearts(5); meow(true);
@@ -320,34 +365,29 @@
         setTimeout(function () { S.mode = "idle"; S.nextThink = 0; }, 900);
       }
     }
+    place();
 
-    cat.style.left = (S.x * sz.w) + "px";
-    cat.style.top = (S.y * sz.h) + "px";
-    cat.style.setProperty("--face", S.face);
-    cat.style.setProperty("--scale", (0.82 + (S.y - 0.55) * 0.5).toFixed(3)); // lower = nearer = bigger
-
-    if (S.visible) {
+    if (S.phase === "live") {
       if (now > S.nextThink && S.mode !== "chase" && S.mode !== "eat") { think(); S.nextThink = now + rand(3800, 7200); }
-      if (now > S.nextMeow) { meow(); S.nextMeow = now + rand(9000, 22000); }
+      if (S.visible && now > S.nextMeow) { meow(); S.nextMeow = now + rand(9000, 22000); }
     }
   }
 
-  /* --------------------------------------------------- visibility + audio */
-  // meows are only heard once the visitor reaches the end and actually sees him
-  if ("IntersectionObserver" in window) {
+  /* --------------------------------------------------- visibility + wake */
+  // scrolling the play area into view wakes him; meows gate on reached + visible
+  if ("IntersectionObserver" in window && !reduce) {
     new IntersectionObserver(function (es) {
       es.forEach(function (e) {
-        var nowVisible = e.isIntersecting && e.intersectionRatio > 0.35;
-        if (nowVisible && !S.visible) {
-          S.visible = true;
-          S.nextMeow = performance.now() + 900; S.nextThink = performance.now() + 1500;
-          setTimeout(function () { if (S.audio) meow(); say("You made it to the end, comrade. I knew you would. Meow.", 4600); }, 700);
-        } else if (!nowVisible) { S.visible = false; }
+        S.visible = e.isIntersecting && e.intersectionRatio > 0.2;
+        if (S.visible && S.phase === "sleep") startDart();
       });
-    }, { threshold: [0, 0.35, 0.6] }).observe(stage);
-  } else { S.visible = true; }
+    }, { threshold: [0, 0.2, 0.5] }).observe(stage);
+  } else {
+    // reduced motion / no IO: skip the choreography, just put him home awake
+    var hp = housePos(); S.px = hp.x; S.py = hp.y; S.phase = "live"; S.reached = true; S.visible = true;
+    cat.classList.remove("is-sleeping");
+  }
 
-  // browsers need a gesture before audio — unlock on the visitor's first interaction
   ["pointerdown", "keydown", "touchstart"].forEach(function (ev) {
     window.addEventListener(ev, unlockAudio, { passive: true });
   });
@@ -356,7 +396,11 @@
   var pb = document.getElementById("catPlay"); if (pb) pb.addEventListener("click", function () { unlockAudio(); toggleLaser(); });
   var eb = document.getElementById("catPet"); if (eb) eb.addEventListener("click", pet);
 
+  // keep the perch glued to the box while he sleeps through layout shifts
+  addEventListener("resize", function () { if (S.phase === "sleep") { var p = perchPos(); S.px = p.x; S.py = p.y; } });
+
   affect(0);
+  var p0 = perchPos(); S.px = p0.x; S.py = p0.y; place();
   requestAnimationFrame(frame);
-  logLine("cat", "Vladimir \"Longcat\" Pawtin, reporting. Pet me, feed me, point the red dot — or ask me about my dad. Papers optional.");
+  logLine("cat", "Vladimir \"Longcat\" Pawtin, asleep on the box above. Scroll down and I'll bolt home — then pet me, feed me, point the red dot, or ask about my dad.");
 })();
