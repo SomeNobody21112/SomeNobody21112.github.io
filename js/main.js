@@ -639,7 +639,8 @@
         set("langs", Object.keys(langs).length);
         var last = own.reduce(function (m, x) { var d = new Date(x.pushed_at); return d > m ? d : m; }, new Date(0));
         set("active", last > new Date(0) ? mon(last) : "—");
-        var top = own.filter(function (x) { return x.name.toLowerCase() !== U.toLowerCase(); })
+        var SKIP = { "somenobody21112": 1, "iot-maintenance": 1 };
+        var top = own.filter(function (x) { return !SKIP[x.name.toLowerCase()]; })
           .sort(function (a, b) {
             return ((b.description ? 1 : 0) - (a.description ? 1 : 0)) ||
                    (b.stargazers_count - a.stargazers_count) ||
