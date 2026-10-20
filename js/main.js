@@ -77,11 +77,20 @@
   /* ================= LOADER sequence ================= */
   var numEl = document.getElementById("loaderNum");
   var fillEl = document.getElementById("loaderFill");
-  var counter = { v: 0 };
+  var statusEl = document.getElementById("loaderStatus");
+  var counter = { v: 0 }, lastStatus = "";
+  // boot log mapped to his real stack — reads like a system coming up
+  var STATUS = [[0, "booting srd.os"], [14, "loading model weights"], [31, "quantizing · fp32 → 2-bit"],
+    [48, "spinning up RAWRS"], [66, "decoding the signal"], [83, "compiling the next one"], [100, "ready."]];
+  function statusFor(v) { var s = STATUS[0][1]; for (var i = 0; i < STATUS.length; i++) if (v >= STATUS[i][0]) s = STATUS[i][1]; return s; }
 
   var tl = G.timeline();
   tl.to(counter, { v: 100, duration: 3.8, ease: "power1.inOut",
-      onUpdate: function () { if (numEl) numEl.textContent = String(Math.round(counter.v)).padStart(3, "0"); } }, 0)
+      onUpdate: function () {
+        var v = Math.round(counter.v);
+        if (numEl) numEl.textContent = String(v).padStart(3, "0");
+        if (statusEl) { var s = statusFor(v); if (s !== lastStatus) { statusEl.textContent = s; lastStatus = s; } }
+      } }, 0)
     .to(fillEl, { width: "100%", duration: 3.8, ease: "power1.inOut" }, 0)
     .to(".loader__img", { clipPath: "inset(0% 0 0 0)", duration: 1.8, ease: "power3.out" }, 0.6)
     .to(".loader__meta, .loader__bar, .loader__count, .loader__frame",
@@ -114,11 +123,11 @@
     if (el.closest(".work")) return;                   // skip the pinned gallery title
     el.classList.add("is-sweep");
     var dir = i % 2 ? 1 : -1;
-    function amp() { return (matchMedia("(max-width:760px)").matches ? 14 : 30) * dir; }
+    var amp = (matchMedia("(max-width:760px)").matches ? 16 : 34) * dir;
     G.fromTo(el,
-      { x: function () { return amp() + "vw"; } },
-      { x: 0, ease: "none",
-        scrollTrigger: { trigger: el, start: "top bottom", end: "top 42%", scrub: 1, invalidateOnRefresh: true } });
+      { x: amp + "vw" },
+      { x: 0, duration: 1.15, ease: "power3.out",
+        scrollTrigger: { trigger: el, start: "top 80%", toggleActions: "play none none reverse" } });
   });
   G.utils.toArray(".contact__big .w").forEach(function (el) {
     G.from(el, { yPercent: 118, duration: 1.1, ease: "power4.out",
@@ -665,8 +674,11 @@
           .slice(0, 6);
         if (list) list.innerHTML = top.map(function (x) {
           var star = x.stargazers_count > 0 ? "  ·  ★ " + x.stargazers_count : "";
+          // ponytail: tiny fallback map for repos with no GitHub description
+          var DESC = { ichnova: "Blind radio-signal decoder from first principles — 30/30 held-out, zero false accepts." };
+          var d = x.description || DESC[x.name.toLowerCase()] || "";
           return '<li class="gh__repo"><a href="' + esc(x.html_url) + '" target="_blank" rel="noopener" data-cursor>' + esc(x.name) + ' ↗</a>' +
-            '<p>' + (x.description ? esc(x.description) : "—") + '</p>' +
+            '<p>' + (d ? esc(d) : "—") + '</p>' +
             '<span class="gh__meta">' + (x.language ? esc(x.language) : "—") + star + '  ·  ' + mon(x.pushed_at) + '</span></li>';
         }).join("");
         if (note) note.textContent = "live · api.github.com/users/" + U;
