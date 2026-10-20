@@ -497,7 +497,8 @@
   }
 
 
-  /* ================= live quantization (float32 -> 2-bit, watch) ================= */
+
+  /* ================= live quantization (float32 -> 2-bit) ================= */
   function initQuant() {
     var stage = document.getElementById("quantStage"),
         cv = document.getElementById("quantCv");
@@ -505,82 +506,95 @@
     var ctx = cv.getContext("2d");
     var dpr = Math.min(2, window.devicePixelRatio || 1);
     var W = 0, H = 0, C = 0, R = 0;
-    var RED = "rgba(255,40,52,";
+    var RED = "rgba(255,40,52,", FG = "236,233,227";
+    var LV = [0, 1 / 3, 2 / 3, 1], CODE = ["00", "01", "10", "11"]; // 2-bit levels
 
     function size() {
-      var r = stage.getBoundingClientRect(); W = r.width; H = r.height;
+      var r = stage.getBoundingClientRect(); W = Math.round(r.width); H = Math.round(r.height);
       if (!W || !H) return;
-      cv.width = Math.floor(W * dpr); cv.height = Math.floor(H * dpr);
+      cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      C = W < 560 ? 18 : 30;                 // weight columns
-      R = Math.max(9, Math.round(C * (H / W) * 0.92)); // keep cells ~square
+      C = W < 560 ? 12 : 18; R = W < 560 ? 6 : 7;
     }
-
-    // smooth pseudo-random weight field in [0,1]
+    function px(n) { return Math.round(n) + 0.5; } // crisp 1px strokes
     function field(c, r, t) {
-      return 0.5 + 0.5 * (
-        0.55 * Math.sin(c * 0.55 + r * 0.33 + t * 0.6) +
-        0.30 * Math.sin(c * 0.21 - r * 0.47 + t * 0.9 + 1.7) +
-        0.15 * Math.sin((c + r) * 0.4 - t * 0.5)
-      );
+      return 0.5 + 0.5 * (0.6 * Math.sin(c * 0.5 + r * 0.4 + t * 0.7) + 0.4 * Math.sin(c * 0.9 - r * 0.3 + t * 1.1 + 1.3));
     }
-    function pad2(n) { n = (n & 3).toString(2); return n.length < 2 ? "0" + n : n; }
+    function pdf(x, t) { // wobbling weight-value distribution
+      return (Math.exp(-Math.pow((x - 0.46) / 0.17, 2)) + 0.5 * Math.exp(-Math.pow((x - 0.68) / 0.12, 2))) * (0.9 + 0.1 * Math.sin(t * 0.9));
+    }
 
     function draw(t) {
-      var padX = Math.max(18, W * 0.055), padTop = H * 0.16, padBot = H * 0.14;
-      var gw = W - padX * 2, gh = H - padTop - padBot;
-      var cwid = gw / C, chei = gh / R;
-      // quantization front sweeps top->bottom, wraps; fractional edge row is mid-collapse
-      var period = R + 4, pos = (t * 0.9) % period, scale = 0.26 + 0.14 * Math.abs(Math.sin(t * 0.35));
-
+      var phase = (t % 7) / 7;
+      var front = phase * (R + 2);                       // sweep rows then hold
+      var q = Math.max(0, Math.min(1, front / R)); q = q * q * (3 - 2 * q);
       ctx.fillStyle = "#060606"; ctx.fillRect(0, 0, W, H);
-      ctx.textAlign = "center"; ctx.textBaseline = "middle";
-      var lf = "600 " + Math.max(7, Math.min(13, chei * 0.3)).toFixed(0) + "px " + MONO;
+      var padX = Math.max(20, W * 0.05), mW = W - padX * 2;
 
+      /* ---- weight matrix (top) ---- */
+      var mTop = H * 0.17, mH = H * 0.4, tw = mW / C, th = mH / R;
+      ctx.textAlign = "center"; ctx.textBaseline = "middle";
+      var codeFont = "700 " + Math.max(9, Math.min(15, th * 0.34)).toFixed(0) + "px " + MONO;
       for (var r = 0; r < R; r++) {
-        var edge = pos - r;                 // >1 fully quantized, 0..1 collapsing, <0 still float
-        var q = edge >= 1 ? 1 : (edge <= 0 ? 0 : edge); // collapse amount for this row
-        var vy = padTop + r * chei;
+        var rq = Math.max(0, Math.min(1, front - r));    // this row's collapse 0..1
         for (var c = 0; c < C; c++) {
-          var vx = padX + c * cwid;
-          var v = field(c, r, t);
-          var level = Math.round(v * 3);            // 0..3  (2-bit)
-          var qv = level / 3;                        // snapped value
-          var shade = v + (qv - v) * q;              // lerp float -> snapped
-          var g = Math.round(20 + shade * 214);
+          var v = field(c, r, t), lv = Math.round(v * 3), qv = LV[lv];
+          var g = Math.round(14 + (v + (qv - v) * rq) * 224);
+          var x0 = Math.round(padX + c * tw), y0 = Math.round(mTop + r * th);
+          var x1 = Math.round(padX + (c + 1) * tw), y1 = Math.round(mTop + (r + 1) * th);
           ctx.fillStyle = "rgb(" + g + "," + g + "," + g + ")";
-          var gap = q > 0.5 ? 1.4 : 0.4;             // crisp blocks once quantized
-          ctx.fillRect(vx + gap, vy + gap, cwid - gap * 2, chei - gap * 2);
-          if (q >= 1) {
-            ctx.fillStyle = (g > 140 ? "rgba(6,6,6,.55)" : "rgba(236,233,227,.4)");
-            ctx.font = lf; ctx.fillText(pad2(level), vx + cwid / 2, vy + chei / 2);
+          ctx.fillRect(x0 + 1, y0 + 1, (x1 - x0) - 2, (y1 - y0) - 2);   // crisp tile, 1px gutter
+          if (rq >= 1) {
+            ctx.fillStyle = g > 130 ? "rgba(6,6,6,.82)" : "rgba(" + FG + ",.92)";
+            ctx.font = codeFont; ctx.fillText(CODE[lv], (x0 + x1) / 2, (y0 + y1) / 2 + 1);
           }
         }
       }
-      // red scan line at the collapsing front
-      if (pos >= 0 && pos < R + 1) {
-        var fy = padTop + Math.min(R, pos) * chei;
-        ctx.strokeStyle = RED + ".92)"; ctx.lineWidth = 2;
-        ctx.beginPath(); ctx.moveTo(padX, fy); ctx.lineTo(padX + gw, fy); ctx.stroke();
-        ctx.fillStyle = RED + ".08)"; ctx.fillRect(padX, fy, gw, Math.min(chei * 1.1, gh));
+      if (front > 0 && front < R) {                      // red sweep line
+        var fy = mTop + Math.min(R, front) * th;
+        ctx.strokeStyle = RED + ".95)"; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(padX, px(fy)); ctx.lineTo(padX + mW, px(fy)); ctx.stroke();
       }
-      // top readout
       ctx.textAlign = "left"; ctx.textBaseline = "alphabetic";
       ctx.fillStyle = RED + ".95)"; ctx.font = "600 11px " + MONO;
-      var done = Math.max(0, Math.min(R, Math.floor(pos)));
-      ctx.fillText("quantizing  row " + done + "/" + R + "   ·   block scale " + scale.toFixed(3), padX, padTop - H * 0.055);
-      // legend: four levels
-      ctx.fillStyle = "rgba(236,233,227,.4)"; ctx.font = "500 11px " + MONO;
-      ctx.fillText("float32", padX, H - padBot * 0.42);
-      var lab = ["00", "01", "10", "11"], lx = padX + gw - 4 * 26;
-      for (var k = 0; k < 4; k++) {
-        var lg = Math.round(20 + (k / 3) * 214);
-        ctx.fillStyle = "rgb(" + lg + "," + lg + "," + lg + ")";
-        ctx.fillRect(lx + k * 26, H - padBot * 0.62, 18, 12);
-        ctx.fillStyle = "rgba(236,233,227,.5)"; ctx.font = "500 9px " + MONO;
-        ctx.fillText(lab[k], lx + k * 26 + 2, H - padBot * 0.18);
-        ctx.font = "500 11px " + MONO;
+      ctx.fillText("weight matrix  ·  " + Math.max(0, Math.min(R, Math.floor(front))) + "/" + R + " rows quantized", padX, mTop - 12);
+      ctx.fillStyle = "rgba(" + FG + ",.42)"; ctx.font = "500 10.5px " + MONO;
+      ctx.fillText("32-bit float", padX, mTop + mH + 18);
+      ctx.textAlign = "right"; ctx.fillStyle = q > 0.5 ? RED + ".9)" : "rgba(" + FG + ",.42)";
+      ctx.fillText("2-bit · 4 levels", padX + mW, mTop + mH + 18); ctx.textAlign = "left";
+
+      /* ---- value distribution (bottom): continuous → 4 spikes ---- */
+      var hTop = H * 0.68, hH = H * 0.2, hBase = hTop + hH, hW = mW, NB = 80;
+      ctx.strokeStyle = "rgba(" + FG + ",.18)"; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(padX, px(hBase)); ctx.lineTo(padX + hW, px(hBase)); ctx.stroke();
+      var vals = [], peak = 0, total = 0, mass = [0, 0, 0, 0];
+      for (var i = 0; i <= NB; i++) { var xv = i / NB, p = pdf(xv, t); vals.push(p); if (p > peak) peak = p; total += p; mass[Math.round(xv * 3)] += p; }
+      if (q < 1) {                                       // continuous area, fades out
+        ctx.fillStyle = "rgba(" + FG + "," + (0.15 * (1 - q)).toFixed(3) + ")";
+        ctx.beginPath(); ctx.moveTo(padX, hBase);
+        for (var i2 = 0; i2 <= NB; i2++) ctx.lineTo(padX + (i2 / NB) * hW, hBase - (vals[i2] / peak) * hH);
+        ctx.lineTo(padX + hW, hBase); ctx.closePath(); ctx.fill();
+        ctx.strokeStyle = "rgba(" + FG + "," + (0.5 * (1 - q)).toFixed(3) + ")"; ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        for (var i3 = 0; i3 <= NB; i3++) { var xx = padX + (i3 / NB) * hW, yy = hBase - (vals[i3] / peak) * hH; i3 ? ctx.lineTo(xx, yy) : ctx.moveTo(xx, yy); }
+        ctx.stroke();
       }
+      var bw = Math.max(8, hW * 0.05);                   // 4 collapsed bars, fade in
+      for (var k = 0; k < 4; k++) {
+        var bx = Math.max(padX + bw / 2, Math.min(padX + hW - bw / 2, padX + LV[k] * hW));
+        var bh = Math.min(hH, (mass[k] / total) * hH * 3.2 * q);
+        if (q > 0.02) { ctx.fillStyle = q > 0.6 ? "rgb(224,224,224)" : "rgba(" + FG + "," + q.toFixed(3) + ")"; ctx.fillRect(Math.round(bx - bw / 2), Math.round(hBase - bh), Math.round(bw), Math.round(bh)); }
+        ctx.fillStyle = "rgba(" + FG + ",.5)"; ctx.font = "500 9px " + MONO; ctx.textAlign = "center";
+        ctx.fillText(CODE[k], bx, hBase + 13);
+      }
+      ctx.textAlign = "left";
+      ctx.strokeStyle = "rgba(" + FG + ",.16)"; ctx.setLineDash([3, 3]); ctx.lineWidth = 1; // decision boundaries
+      [1 / 6, 0.5, 5 / 6].forEach(function (b) { var X = padX + b * hW; ctx.beginPath(); ctx.moveTo(px(X), hTop - 6); ctx.lineTo(px(X), hBase); ctx.stroke(); });
+      ctx.setLineDash([]);
+      var scanX = padX + (phase % 1) * hW;               // red decision marker, swept
+      ctx.strokeStyle = RED + ".85)"; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(px(scanX), hTop - 6); ctx.lineTo(px(scanX), hBase); ctx.stroke();
+      ctx.fillStyle = "rgba(" + FG + ",.45)"; ctx.font = "500 10.5px " + MONO; ctx.fillText("Δ = block scale / 3", padX, hTop - 6);
+      ctx.textAlign = "right"; ctx.fillStyle = RED + ".9)"; ctx.fillText("weight distribution → four levels", padX + hW, hTop - 6); ctx.textAlign = "left";
     }
 
     var raf = 0, running = false;
@@ -589,7 +603,7 @@
     function stop() { running = false; cancelAnimationFrame(raf); }
 
     size();
-    if (reduce) { draw(3.2); }              // one static mid-sweep frame
+    if (reduce) { draw(3.2); }
     else if ("IntersectionObserver" in window) { new IntersectionObserver(function (en) { en.forEach(function (e) { e.isIntersecting ? start() : stop(); }); }, { threshold: 0.05 }).observe(stage); }
     else start();
     window.addEventListener("themechange", function () { if (!running) draw(3.2); });
