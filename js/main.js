@@ -117,18 +117,29 @@
       scrollTrigger: { trigger: el, start: "top 88%" } });
   });
 
-  /* section-head titles: bold horizontal slide-in, settling at natural spot.
-     No vertical wipe/mask — that was causing the "bob" and clipping descenders (g, y). */
+  /* section-head titles: slide in from alternating sides, settle at natural spot.
+     A per-frame ticker check (NOT ScrollTrigger, NOT IntersectionObserver): the pinned
+     gallery distorts ScrollTrigger's scroll math, and IO drops headings when Lenis
+     momentum jumps past them between samples. The ticker runs every frame during that
+     momentum, so every heading reliably slides as its top crosses the fold. */
+  var sweepPending = [];
   G.utils.toArray(".sec-head__title, .about__h").forEach(function (el, i) {
     if (el.closest(".work")) return;                   // skip the pinned gallery title
+    el.style.setProperty("--amp", (i % 2 ? 1 : -1) * (matchMedia("(max-width:760px)").matches ? 16 : 34) + "vw");
     el.classList.add("is-sweep");
-    var dir = i % 2 ? 1 : -1;
-    var amp = (matchMedia("(max-width:760px)").matches ? 16 : 34) * dir;
-    G.fromTo(el,
-      { x: amp + "vw" },
-      { x: 0, duration: 1.15, ease: "power3.out",
-        scrollTrigger: { trigger: el, start: "top 80%", toggleActions: "play none none reverse" } });
+    sweepPending.push(el);
   });
+  function sweepCheck() {
+    var line = innerHeight * 0.85;                      // slide in once the top crosses here
+    for (var j = sweepPending.length - 1; j >= 0; j--) {
+      if (sweepPending[j].getBoundingClientRect().top < line) {
+        sweepPending[j].classList.add("is-in");
+        sweepPending.splice(j, 1);
+      }
+    }
+    if (!sweepPending.length) G.ticker.remove(sweepCheck);
+  }
+  if (sweepPending.length) G.ticker.add(sweepCheck);
   G.utils.toArray(".contact__big .w").forEach(function (el) {
     G.from(el, { yPercent: 118, duration: 1.1, ease: "power4.out",
       scrollTrigger: { trigger: el, start: "top 92%" } });

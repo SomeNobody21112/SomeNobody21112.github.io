@@ -420,7 +420,8 @@ a:focus-visible{ outline:2px solid var(--fg); outline-offset:4px; }
 /* ---------- heading scroll-sweep (bold horizontal drift) ---------- */
 /* clip swept headings at the section edge so the drift never scrolls the page sideways */
 .shell, .caps, .stack, .xp, .gh, .ascii, .os, .quant, .about{ overflow-x:clip; }
-.is-sweep{ will-change:transform; }
-@media (prefers-reduced-motion:reduce){ .is-sweep{ transform:none !important; } }
+.is-sweep{ transform:translateX(var(--amp,0)); transition:transform 1s cubic-bezier(.16,1,.3,1); will-change:transform; }
+.is-sweep.is-in{ transform:none; }
+@media (prefers-reduced-motion:reduce){ .is-sweep{ transform:none !important; transition:none !important; } }
 /* terminal: subtle cue once it has captured scroll (after a click) */
 .cli--active{ border-color:var(--dim); }
