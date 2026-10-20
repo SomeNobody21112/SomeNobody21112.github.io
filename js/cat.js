@@ -168,19 +168,35 @@
   function tR(x, y, w, h, c) { tO.fillStyle = c; tO.fillRect(x, y, w, h); }
   function drawTowerPixels(now) {
     tO.clearRect(0, 0, 40, 68);
-    var WOOD = "#c8a977", WD2 = "#a9875f", SIS = "#dac9a2", FR = "#2d2d2d", CU = "#b85b51", BALL = "#cf4a3c", DK = "#17120e";
-    tR(5, 63, 30, 4, WD2); tR(7, 61, 26, 3, WOOD);            // round base
-    tR(5, 26, 5, 36, FR); tR(6, 28, 3, 32, SIS);              // left scratching post (sisal)
-    tR(2, 24, 12, 3, WOOD);                                   // its top shelf
-    tR(18, 22, 5, 40, FR); tR(19, 44, 3, 16, SIS);            // central post
-    tR(9, 40, 20, 16, WD2); tR(10, 41, 18, 13, WOOD);        // condo pod
-    tO.fillStyle = DK; tO.beginPath(); tO.arc(16, 49, 4, 0, 6.2832); tO.fill(); // round entrance
-    tR(8, 36, 24, 4, WOOD); tR(12, 33, 14, 3, CU);            // mid platform + cushion
-    tR(22, 20, 14, 4, WOOD); tR(24, 18, 10, 2, CU);          // top perch + cushion
-    tO.strokeStyle = WOOD; tO.lineWidth = 2; tO.beginPath(); tO.arc(30, 9, 6, 0, 6.2832); tO.stroke(); // hoop toy
-    var bx = 30 + Math.round(Math.sin(now / 600) * 3);        // swinging ball on a string
-    tO.strokeStyle = "#6a6a6a"; tO.lineWidth = 1; tO.beginPath(); tO.moveTo(30, 15); tO.lineTo(bx, 21); tO.stroke();
-    tO.fillStyle = BALL; tO.beginPath(); tO.arc(bx, 23, 2.6, 0, 6.2832); tO.fill();
+    var WOOD = "#c9ab7e", WD2 = "#a2855c", SIS = "#d8c69a", CU = "#b85b51", BALL = "#cf4a3c", DK = "#1a140e", STR = "#7a7a7a";
+    function post(x, y0, y1, w) {                     // sisal-wrapped post with rope banding
+      tR(x, y0, w, y1 - y0, SIS);
+      for (var y = y0 + 1; y < y1; y += 3) tR(x, y, w, 1, WD2);
+    }
+    function board(x, y, w, cushX, cushW) {           // a shelf with underside shadow + optional cushion
+      tR(x, y, w, 3, WOOD); tR(x, y + 3, w, 1, WD2);
+      if (cushW) { tR(cushX, y - 3, cushW, 3, CU); tR(cushX, y - 1, cushW, 1, "#9c4a43"); }
+    }
+    // posts first (everything threads onto the centre post)
+    post(17, 14, 60, 6);                              // central post
+    post(28, 36, 60, 4);                              // right support leg (base -> mid shelf)
+    // base
+    tR(4, 60, 32, 4, WD2); tR(6, 59, 28, 1, WOOD);
+    // tier 1 — condo cube with round porthole (lower left)
+    tR(3, 43, 22, 2, WOOD);                           // roof
+    tR(4, 45, 20, 15, WD2); tR(5, 45, 18, 14, WOOD);  // body + lit face
+    tO.fillStyle = DK; tO.beginPath(); tO.arc(14, 53, 4.3, 0, TAU); tO.fill();
+    tO.strokeStyle = WD2; tO.lineWidth = 1; tO.beginPath(); tO.arc(14, 53, 4.3, 0, TAU); tO.stroke(); // rim
+    // tier 2 — mid shelf + cushion (centred on post)
+    board(7, 34, 26, 12, 16);
+    // tier 3 — top perch + cushion
+    board(9, 15, 22, 13, 14);
+    // top arm + swinging ball toy
+    tR(18, 7, 4, 8, SIS); tR(18, 7, 13, 2, WOOD);     // post cap + horizontal arm
+    var bx = 29 + Math.round(Math.sin(now / 650) * 3);
+    tO.strokeStyle = STR; tO.lineWidth = 1; tO.beginPath(); tO.moveTo(29, 9); tO.lineTo(bx + 0.5, 15); tO.stroke();
+    tO.fillStyle = BALL; tO.beginPath(); tO.arc(bx, 17, 2.7, 0, TAU); tO.fill();
+    tO.fillStyle = "#e0695d"; tO.fillRect(bx - 1, 15, 1, 1);  // ball highlight
   }
   function renderTower(now) {
     if (!towerCx) return;
