@@ -25,6 +25,7 @@
   var MONO = '"JetBrains Mono", ui-monospace, Menlo, Consolas, monospace';
   var G = window.gsap;
   var ST = window.ScrollTrigger;
+  try { if ("scrollRestoration" in history) history.scrollRestoration = "manual"; window.scrollTo(0, 0); } catch (e) {}
   var loader = document.getElementById("loader");
   var yearEl = document.getElementById("year");
   if (yearEl) yearEl.textContent = new Date().getFullYear();

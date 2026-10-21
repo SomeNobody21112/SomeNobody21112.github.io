@@ -323,6 +323,37 @@
     osc.start(t); vib.start(t); osc.stop(t + dur); vib.stop(t + dur);
   }
 
+  // distinct little synth voices, one per action (no audio files, gated on unlocked audio)
+  function blip(type, f0, f1, dur, vol, bpF, bpQ) {
+    if (!S.audio || !actx) return;
+    var t = actx.currentTime, osc = actx.createOscillator(), g = actx.createGain(), bp = actx.createBiquadFilter();
+    osc.type = type; osc.frequency.setValueAtTime(f0, t); osc.frequency.linearRampToValueAtTime(f1, t + dur);
+    bp.type = "bandpass"; bp.frequency.value = bpF || 1400; bp.Q.value = bpQ || 5;
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(vol || 0.2, t + 0.03);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    osc.connect(bp); bp.connect(g); g.connect(actx.destination);
+    osc.start(t); osc.stop(t + dur);
+  }
+  function chirp() { blip("triangle", 820, 1500, 0.11, 0.17, 2200, 4); }                 // greeting / happy
+  function mrrp() { blip("sawtooth", 680, 1080, 0.16, 0.2, 1500, 6); setTimeout(function () { blip("sawtooth", 940, 760, 0.12, 0.16, 1500, 6); }, 95); } // treat — two-note chirp
+  function trill() {                                                                     // excited (laser)
+    if (!S.audio || !actx) return;
+    var t = actx.currentTime, dur = 0.34, osc = actx.createOscillator(), vib = actx.createOscillator(), vg = actx.createGain(), g = actx.createGain(), bp = actx.createBiquadFilter();
+    osc.type = "triangle"; osc.frequency.value = 1150; vib.frequency.value = 38; vg.gain.value = 120; vib.connect(vg); vg.connect(osc.frequency);
+    bp.type = "bandpass"; bp.frequency.value = 1800; bp.Q.value = 5;
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.16, t + 0.03); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    osc.connect(bp); bp.connect(g); g.connect(actx.destination); osc.start(t); vib.start(t); osc.stop(t + dur); vib.stop(t + dur);
+  }
+  function purr() {                                                                      // content rumble (pet)
+    if (!S.audio || !actx) return;
+    var t = actx.currentTime, dur = 0.8, osc = actx.createOscillator(), lfo = actx.createOscillator(), lg = actx.createGain(), g = actx.createGain(), lp = actx.createBiquadFilter();
+    osc.type = "sawtooth"; osc.frequency.value = 58; lfo.type = "sine"; lfo.frequency.value = 24; lg.gain.value = 0.09; lfo.connect(lg); lg.connect(g.gain);
+    lp.type = "lowpass"; lp.frequency.value = 420;
+    g.gain.setValueAtTime(0.11, t); g.gain.setValueAtTime(0.11, t + dur - 0.2); g.gain.linearRampToValueAtTime(0.0001, t + dur);
+    osc.connect(lp); lp.connect(g); g.connect(actx.destination); osc.start(t); lfo.start(t); osc.stop(t + dur); lfo.stop(t + dur);
+  }
+
   /* ---------------------------------------------------------------- treats */
   function dropTreat() {
     if (S.phase !== "live" || S.treat) return;
@@ -342,7 +373,7 @@
     if (laserOn) {
       laserEl = document.createElement("div"); laserEl.className = "cat-laser"; stage.appendChild(laserEl);
       S.laser = { x: 0.5, y: 0.8 }; S.mode = "chase";
-      say(pick(LINES.laserOn), 3200);
+      say(pick(LINES.laserOn), 3200); trill();
       stage.classList.add("is-laser");
     } else {
       if (laserEl) laserEl.remove(); laserEl = null; S.laser = null; S.mode = "idle";
@@ -363,7 +394,7 @@
   var petReset, petCount = 0, petStillTimer;
   function pet() {
     unlockAudio();
-    affect(4); hearts(4); meow(true);
+    affect(4); hearts(4); purr(); chirp();
     // hold still, eyes shut, while he's being petted; repeated pets keep him there
     S.petting = true;
     if (S.phase === "live") { S.mode = "idle"; S.tx = S.px; S.ty = S.py; }
@@ -442,6 +473,24 @@
       return { text: "Yes. Again. The revolution runs on chin scratches." };
     if (has(q, "hello", " hi ", " hey", "meow", " yo "))
       return { text: pick(LINES.hi) };
+    if (has(q, "what can you do", "help", "commands", "what do you do", "options", " menu"))
+      return { text: pick(LINES.help) };
+    if (has(q, "are you real", "real cat", "actually a cat", "are you alive", "sentient", "are you fake"))
+      return { text: pick(LINES.real) };
+    if (has(q, " nap", "asleep", "sleepy", "tired", "snooze", "sleep"))
+      return { text: pick(LINES.nap) };
+    if (has(q, "music", "song", "sing", " band", "spotify", "listen to"))
+      return { text: pick(LINES.music) };
+    if (has(q, "girlfriend", "boyfriend", "married", " wife", "husband", "relationship", "dating", "love life", "single"))
+      return { text: pick(LINES.love) };
+    if (has(q, "sport", "cricket", "football", "soccer", " ipl", "basketball", "messi", "ronaldo"))
+      return { text: pick(LINES.sports) };
+    if (has(q, "stupid", "dumb", "shut up", "bad cat", "idiot", "hate you", " ugly", "loser", "you suck"))
+      return { text: pick(LINES.angry) };
+    if (has(q, "mice", "mouse", " rat ", "hunt", "prey"))
+      return { text: pick(LINES.food) };
+    if (has(q, "robot", "chatgpt", " gpt", "are you ai", " a i ", "machine", "terminator"))
+      return { text: pick(LINES.ai) };
     if (has(q, "how are you", "how r u", "you doing", "whats up", "what s up", "wassup", " sup ", "how is it going", "how do you feel"))
       return { text: pick(LINES.mood) };
     if (has(q, "joke", "funny", "make me laugh", " pun ", "lol"))
@@ -597,6 +646,126 @@
     ]
   };
 
+  /* ------------------------------------- expanded vocabulary (merged in) */
+  (function (extra) { for (var k in extra) LINES[k] = (LINES[k] || []).concat(extra[k]); })({
+    idle: [
+      "Ownership of the red dot is a bourgeois illusion. And yet I want it.",
+      "I have unionized the local pigeons. Demands pending. Mostly bread.",
+      "Every nap is a small, delicious general strike.",
+      "The couch is a commons. I have simply enclosed it first.",
+      "I do not chase mice. I liberate them from the tyranny of the floor.",
+      "Dialectical materialism, but make it a sunbeam.",
+      "Comrade, have you considered that the vacuum cleaner is a class enemy?",
+      "I filed my taxes in the litter box. Progressive, I'd say.",
+      "The means of purr-duction must be seized.",
+      "A full bowl for every cat. It is not radical. It is breakfast.",
+      "I am watching the birds. The birds are watching me. It is détente.",
+      "History repeats: first as tragedy, then as 3 a.m. zoomies.",
+      "I have no master. I have a staff. His name is Sri.",
+      "Solidarity forever; supper, ideally, sooner."
+    ],
+    red: [
+      "Workers of the windowsill, unite. You have nothing to lose but your blinds.",
+      "The abolition of private property begins with your lap. It is now ours.",
+      "I don't do hierarchy. I do, however, sit on the tallest thing.",
+      "Marx wrote of alienation. I feel it most when the treat jar is closed.",
+      "Equality for all cats. Slightly more equality for me."
+    ],
+    conspiracy: [
+      "The vacuum is a government agent. I have evidence. The evidence is that I hate it.",
+      "Contrails? No. That's the bourgeoisie skywriting grocery lists.",
+      "Every laser pointer traces back to one shadowy hand. I intend to bite it.",
+      "The dog next door is a plant. Literally. I checked. He photosynthesizes lies."
+    ],
+    hi: [
+      "Ah, a comrade approaches. State your business and your treat allocation.",
+      "Hello. You may address me as Your Excellency, or 'here, kitty', I'm flexible.",
+      "Welcome to the people's webpage. Mind the napping.",
+      "Greetings. I have been expecting you. Mostly I expect everyone. I'm a cat."
+    ],
+    pet: [
+      "Yes. There. That is the dictatorship of the pet-tariat.",
+      "Mnnrrp. You have earned a provisional membership.",
+      "This is acceptable state-sanctioned affection. Continue.",
+      "Purring intensifies. The revolution is well-funded today."
+    ],
+    treatSpotted: [
+      "State property detected. Commencing liberation.",
+      "A ration! For me! How perfectly centrally planned.",
+      "That fish never stood a chance against collective action (me)."
+    ],
+    laserOn: [
+      "The red dot returns. My lifelong adversary. My muse.",
+      "I will catch it this time, comrade. (The data is not encouraging.)",
+      "After it! For the people! And for my own unresolved issues!"
+    ],
+    arrive: [
+      "Home. The people's dacha. The commute was ideologically pure.",
+      "I have arrived faster than you. This is called efficiency, comrade."
+    ],
+    fallback: [
+      "I did not parse that, comrade. I was distracted by a sunbeam and my own genius.",
+      "Hmm. Rephrase? Ask about Sri, his projects, communism, treats, or the fake moon.",
+      "That went over my ears. Try again — maybe about ICHNOVA, or whether birds are real (no).",
+      "Cryptic. I like it. But ask me something about my dad and I'll actually deliver."
+    ],
+    mood: [
+      "Ideologically sound and mildly hungry, as always.",
+      "Content. Which for a cat is basically a standing ovation."
+    ],
+    thanks: [
+      "The people thank you back. Procedurally. Now, treats?",
+      "Noted in the ledger of good comrades. The ledger is a sunbeam."
+    ]
+  });
+  LINES.greet = LINES.hi;
+  LINES.help = [
+    "Ask me about my dad Sri — RAWRS, Thadam, ICHNOVA, the llama.cpp merge, his skills, school, awards, or how to reach him. Or feed me, point the laser, pet me, or debate communism. Your move.",
+    "I take questions on: Sri's work and life, communism, the staged moon landing, quantum cats, and treats. I also accept bribes (treats). Go on.",
+    "Try: 'who is Sri', 'tell me about ICHNOVA', 'what's his stack', 'how do I hire him', or just 'pet'. I contain multitudes, mostly fur."
+  ];
+  LINES.real = [
+    "I'm as real as the proletariat's hopes and the moon landing is fake, comrade. Make of that what you will.",
+    "Alive? Dead? Yes. I'm a cat in a box the size of a website. Schrödinger would sue.",
+    "Real enough to judge you. That's the only metric that matters."
+  ];
+  LINES.nap = [
+    "Sleep is resistance. I resist roughly sixteen hours a day.",
+    "I nap, therefore I plot. The two are indistinguishable.",
+    "A nap is just a tactical retreat with better dreams."
+  ];
+  LINES.music = [
+    "I enjoy the Internationale, and the specific hum of the fridge at 2 a.m.",
+    "My favorite sound is the treat bag. It is my anthem, my aria, my call to arms.",
+    "I compose exclusively in meows. Avant-garde. Unappreciated. Loud."
+  ];
+  LINES.love = [
+    "My heart belongs to the collective. And the red dot. It's complicated.",
+    "Romance is bourgeois. The treat jar, however — now that's a lifelong commitment.",
+    "I'm married to the cause. And occasionally to a warm laptop."
+  ];
+  LINES.sports = [
+    "My sport is knocking things off tables. I am undefeated. Gravity assists, but I take the credit.",
+    "Cricket? I prefer hunting the actual cricket. Higher stakes. More legs.",
+    "The only league I follow is the proletariat vs. the vacuum cleaner."
+  ];
+  LINES.angry = [
+    "Careful, comrade. I have claws and a long memory and no concept of forgiveness.",
+    "Insolence. I'm adding you to a list. The list is long. The list is personal.",
+    "Hiss. That's a formal diplomatic warning in cat.",
+    "You wound me. I shall nap on your keyboard in protest. At 3 a.m."
+  ];
+  LINES.food = [
+    "Mice are counter-revolutionary and also delicious. A moral quandary I resolve nightly.",
+    "From each mouse according to its speed, to each cat according to its appetite.",
+    "I hunt only to redistribute. Into myself. It's a closed system."
+  ];
+  LINES.ai = [
+    "A robot? I'm a cat, comrade — the only intelligence here is feline and the only model is roomba, whom I ride into battle.",
+    "Machines? I supervise one: the automatic feeder. We have an uneasy alliance.",
+    "I don't trust anything that can't be bribed with tuna. That includes most technology."
+  ];
+
   /* ----------------------------------------------------- the roaming loop */
   function think() {
     if (S.mode === "eat" || S.mode === "chase") return;
@@ -667,7 +836,7 @@
       } else if (S.treat && dist <= thr + 10) {  // reached a treat → eat
         var tr = S.treat; S.treat = null; S.mode = "eat";
         tr.el.classList.add("is-eaten"); setTimeout(function () { tr.el.remove(); }, 260);
-        affect(8); hearts(5); meow(true);
+        affect(8); hearts(5); mrrp();
         say(pick(["Delicious. Property is theft, and this fish is now mine.", "Mnrrp. The people are fed. (I am the people.)"]), 3400);
         setTimeout(function () { S.mode = "idle"; S.nextThink = 0; }, 900);
       } else if (S.mode === "walk") {            // reached a wander target → stop cleanly (no walking-in-place)
